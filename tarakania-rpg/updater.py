@@ -12,6 +12,9 @@ if TYPE_CHECKING:
     from bot import TarakaniaRPG
 
 
+UPDATE_CHANNEL_ID = 605063135526912010
+
+
 async def verify_github_request(req: web.Request) -> None:
     header_signature = req.headers.get("X-Hub-Signature")
     if not header_signature:
@@ -37,8 +40,26 @@ async def git_pull() -> None:
     print("[GIT] pull completed")
 
 
+async def notify_restart_started(bot: "TarakaniaRPG") -> None:
+    update_channel = bot.get_channel(UPDATE_CHANNEL_ID)
+
+    await update_channel.send(
+        "\N{INFORMATION SOURCE} Restarting bot to apply updates"
+    )
+
+
+async def notify_restart_completed(bot: "TarakaniaRPG") -> None:
+    update_channel = bot.get_channel(UPDATE_CHANNEL_ID)
+
+    await update_channel.send(
+        "\N{INFORMATION SOURCE} Bot successfully restarted"
+    )
+
+
 async def wait_clean_exit(app: web.Application) -> None:
     await git_pull()
+
+    await notify_restart_started(app["bot"])
 
     await app["runner"].cleanup()
     await app.cleanup()
@@ -48,7 +69,7 @@ async def wait_clean_exit(app: web.Application) -> None:
 
 
 async def update_webhook(req: web.Request) -> web.Response:
-    # await verify_github_request(req)
+    await verify_github_request(req)
 
     print("Update webhook fired")
 
@@ -78,3 +99,5 @@ async def start_updater(bot: "TarakaniaRPG") -> None:
     await site.start()
 
     print(f"Listening for github events on port {port}")
+
+    await notify_restart_completed(bot)
