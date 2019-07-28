@@ -1,5 +1,4 @@
 import hmac
-import json
 import asyncio
 
 from typing import TYPE_CHECKING
@@ -101,9 +100,7 @@ async def start_updater(bot: "TarakaniaRPG") -> None:
     app = web.Application()
 
     app["bot"] = bot
-
-    with open("config.json") as f:
-        app["config"] = json.load(f)
+    app["config"] = bot.config
 
     app.add_routes([web.post("/tarakania-rpg-bot-webhook", update_webhook)])
 

@@ -1,7 +1,7 @@
 import time
-import typing
 
 from datetime import timedelta
+from typing import Any, Dict
 
 import git
 import discord
@@ -11,12 +11,18 @@ from updater import start_updater
 
 
 class TarakaniaRPG(discord.AutoShardedClient):
-    def __init__(self, prefix: str, **kwargs: typing.Any):
-        self.prefixes = {prefix}
+    def __init__(self, config: Dict[str, Any], **kwargs: Any):
+        self.config = config
+
+        self.prefixes = {config["default-prefix"]}
+        self.owners = set(config["owners"])
 
         self.repo = git.Repo()
 
         super().__init__(**kwargs)
+
+    def run(self, *args: Any, **kwargs: Any) -> None:
+        super().run(self.config["discord-token"], *args, **kwargs)
 
     async def prepare_prefixes(self) -> None:
         bot_id = self.user.id
