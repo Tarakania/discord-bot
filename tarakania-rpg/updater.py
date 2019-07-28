@@ -3,6 +3,7 @@ import json
 import asyncio
 
 from typing import TYPE_CHECKING
+
 from aiohttp import web
 
 from utils.subprocess import run_subprocess_shell
@@ -32,6 +33,16 @@ async def verify_github_request(req: web.Request) -> None:
         raise web.HTTPUnauthorized(reason="Hashes did not match")
 
 
+async def parse_github_request(req: web.Request) -> None:
+    payload = await req.json()
+
+    # TODO: compare refs, iterate over commits and decide if restart is needed
+
+    await notify_restart_started(
+        req.app["bot"], commits_count=payload.get("size", -1)
+    )
+
+
 async def git_pull() -> None:
     print("[GIT] pull started")
 
@@ -40,12 +51,18 @@ async def git_pull() -> None:
     print("[GIT] pull completed")
 
 
-async def notify_restart_started(bot: "TarakaniaRPG") -> None:
+async def notify_restart_started(
+    bot: "TarakaniaRPG", commits_count: int = -1
+) -> None:
     update_channel = bot.get_channel(UPDATE_CHANNEL_ID)
 
-    await update_channel.send(
-        "\N{INFORMATION SOURCE} Restarting bot to apply updates"
-    )
+    message_base = "\N{INFORMATION SOURCE} Restarting bot to apply "
+    if commits_count == -1:
+        message = message_base + "updates"
+    else:
+        message = message_base + f"**{commits_count}** commits"
+
+    await update_channel.send(message)
 
 
 async def notify_restart_completed(bot: "TarakaniaRPG") -> None:
@@ -59,8 +76,6 @@ async def notify_restart_completed(bot: "TarakaniaRPG") -> None:
 async def wait_clean_exit(app: web.Application) -> None:
     await git_pull()
 
-    await notify_restart_started(app["bot"])
-
     await app["runner"].cleanup()
     await app.cleanup()
     await app["bot"].logout()
@@ -70,6 +85,7 @@ async def wait_clean_exit(app: web.Application) -> None:
 
 async def update_webhook(req: web.Request) -> web.Response:
     await verify_github_request(req)
+    await parse_github_request(req)
 
     print("Update webhook fired")
 

@@ -1,6 +1,9 @@
 discord.py
 aioredis
 asyncpg
+pyyaml>=4.2b1
+GitPython
+humanize
 
 pip-tools
 pre-commit

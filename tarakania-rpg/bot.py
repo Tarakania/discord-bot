@@ -1,14 +1,20 @@
+import time
 import typing
 
+from datetime import timedelta
+
+import git
 import discord
+import humanize
 
 from updater import start_updater
-from utils.subprocess import create_subprocess_shell
 
 
 class TarakaniaRPG(discord.AutoShardedClient):
     def __init__(self, prefix: str, **kwargs: typing.Any):
         self.prefixes = {prefix}
+
+        self.repo = git.Repo()
 
         super().__init__(**kwargs)
 
@@ -46,31 +52,16 @@ class TarakaniaRPG(discord.AutoShardedClient):
         if command == "ping":
             await msg.channel.send(f"{msg.author.mention}, pong!")
         elif command == "version":
-            program = "&&".join(
-                (
-                    "git config --get remote.origin.url",
-                    r'git show -s HEAD --format="latest commit made %cr by **%cn**: \`\`\`%s\`\`\`URL: <{repo_url}/commit/%H>"',
-                )
+            repo_url = self.repo.remote().url
+            commit_date = self.repo.head.object.committed_date
+            committer_name = self.repo.head.object.committer.name
+            commit_summary = self.repo.head.object.summary
+            commit_hash = self.repo.head.object.hexsha
+
+            message = (
+                f"Latest commit made {humanize.naturaltime(timedelta(seconds=time.time() - commit_date))} by **{committer_name}**: ```"
+                f"{commit_summary}```"
+                f"URL: <{repo_url}/commit/{commit_hash}>"
             )
 
-            process = await create_subprocess_shell(program)
-            stdout, stderr = await process.communicate()
-
-            git_url, _, commit_info = stdout.decode().strip().partition("\n")
-
-            if git_url.endswith(".git"):
-                git_url = git_url[:-4]
-            if git_url.startswith("ssh://"):
-                git_url = git_url[6:]
-            if git_url.startswith("git@"):
-                domain, _, resource = git_url[4:].partition(":")
-                git_url = f"https://{domain}/{resource}"
-            if git_url.endswith("/"):
-                git_url = git_url[:-1]
-
-            git_domain = "https://" + git_url[8:].split("/")[0]
-            commit_info = commit_info.format(
-                repo_url=git_url, domain=git_domain
-            )
-
-            await msg.channel.send(commit_info)
+            await msg.channel.send(message)
