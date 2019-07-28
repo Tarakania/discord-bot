@@ -1,3 +1,4 @@
+import os
 import hmac
 import json
 import asyncio
@@ -27,10 +28,16 @@ async def verify_github_request(req: web.Request) -> None:
         raise web.HTTPUnauthorized(reason="Hashes did not match")
 
 
-async def wait_clean_exit(app: web.Application) -> None:
-    print("Exiting in 5 seconds")
+def git_pull() -> None:
+    print("[GIT] pull started")
 
-    await asyncio.sleep(5)
+    os.system("git pull origin master")
+
+    print("[GIT] pull completed")
+
+
+async def wait_clean_exit(app: web.Application) -> None:
+    await app.loop.run_in_executor(None, git_pull)
 
     await app["runner"].cleanup()
     await app.cleanup()
