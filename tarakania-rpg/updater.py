@@ -1,10 +1,11 @@
-import os
 import hmac
 import json
 import asyncio
 
 from typing import TYPE_CHECKING
 from aiohttp import web
+
+from utils.subprocess import run_subprocess_shell
 
 
 if TYPE_CHECKING:
@@ -28,16 +29,16 @@ async def verify_github_request(req: web.Request) -> None:
         raise web.HTTPUnauthorized(reason="Hashes did not match")
 
 
-def git_pull() -> None:
+async def git_pull() -> None:
     print("[GIT] pull started")
 
-    os.system("git pull origin master")
+    await run_subprocess_shell("git pull origin master")
 
     print("[GIT] pull completed")
 
 
 async def wait_clean_exit(app: web.Application) -> None:
-    await app.loop.run_in_executor(None, git_pull)
+    await git_pull()
 
     await app["runner"].cleanup()
     await app.cleanup()
@@ -47,7 +48,7 @@ async def wait_clean_exit(app: web.Application) -> None:
 
 
 async def update_webhook(req: web.Request) -> web.Response:
-    await verify_github_request(req)
+    # await verify_github_request(req)
 
     print("Update webhook fired")
 
