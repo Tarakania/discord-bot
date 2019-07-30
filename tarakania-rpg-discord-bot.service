@@ -4,7 +4,7 @@ Description=Tarakania RPG Discord bot
 [Service]
 Type=forking
 WorkingDirectory=/srv/tarakania/discord-bot
-ExecStart=/usr/bin/screen -h 1024 -dmS tarakania-discord-bot python3.7 tarakania-rpg/main.py
+ExecStart=/usr/bin/screen -h 1024 -dmS tarakania-discord-bot python3.7 tarakania-rpg/main.py --production
 User=tarakania
 Group=tarakania
 Restart=always

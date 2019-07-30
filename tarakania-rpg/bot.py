@@ -1,28 +1,42 @@
 import time
 
 from datetime import timedelta
-from typing import Any, Dict
+from typing import Any
 
 import git
 import discord
 import humanize
 
+from cli import args
 from updater import start_updater
+from config import get_bot_config
 
 
 class TarakaniaRPG(discord.AutoShardedClient):
-    def __init__(self, config: Dict[str, Any], **kwargs: Any):
-        self.config = config
+    def __init__(self, **kwargs: Any):
+        self.args = args
 
-        self.prefixes = {config["default-prefix"]}
-        self.owners = set(config["owners"])
+        self.config = get_bot_config(args.config_file)
+
+        self.prefixes = {self.config["default-prefix"]}
+        self.owners = set(self.config["owners"])
 
         self.repo = git.Repo()
 
         super().__init__(**kwargs)
 
     def run(self, *args: Any, **kwargs: Any) -> None:
-        super().run(self.config["discord-token"], *args, **kwargs)
+        if self.args.production:
+            token = self.config["discord-token"]
+        else:
+            token = self.config["discord-beta-token"]
+
+        if not token:
+            raise RuntimeError(
+                f"Discord {'' if self.args.production else 'beta'}token is missing from config"
+            )
+
+        super().run(token, *args, **kwargs)
 
     async def prepare_prefixes(self) -> None:
         bot_id = self.user.id
@@ -34,6 +48,9 @@ class TarakaniaRPG(discord.AutoShardedClient):
         await start_updater(self)
         await self.prepare_prefixes()
 
+        print(
+            f"Running in {'production' if self.args.production else 'debug'} mode"
+        )
         print("Bot is ready")
 
     async def on_message(self, msg: discord.Message) -> None:

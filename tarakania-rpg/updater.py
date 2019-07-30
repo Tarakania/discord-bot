@@ -67,9 +67,12 @@ async def notify_restart_started(
 async def notify_restart_completed(bot: "TarakaniaRPG") -> None:
     update_channel = bot.get_channel(UPDATE_CHANNEL_ID)
 
-    await update_channel.send(
-        "\N{INFORMATION SOURCE} Bot successfully restarted"
-    )
+    boot_message = "\N{INFORMATION SOURCE} Bot successfully restarted."
+
+    if not bot.args.production:
+        boot_message += "\n\N{WARNING SIGN} Working in debug mode."
+
+    await update_channel.send(boot_message)
 
 
 async def wait_clean_exit(app: web.Application) -> None:
@@ -82,7 +85,7 @@ async def wait_clean_exit(app: web.Application) -> None:
     print("Successfully exited")
 
 
-async def update_webhook(req: web.Request) -> web.Response:
+async def update_webhook_endpoint(req: web.Request) -> web.Response:
     await verify_github_request(req)
     await parse_github_request(req)
 
@@ -94,23 +97,22 @@ async def update_webhook(req: web.Request) -> web.Response:
 
 
 async def start_updater(bot: "TarakaniaRPG") -> None:
-    host = "0.0.0.0"
-    port = 60000
-
     app = web.Application()
 
     app["bot"] = bot
     app["config"] = bot.config
 
-    app.add_routes([web.post("/tarakania-rpg-bot-webhook", update_webhook)])
+    app.add_routes(
+        [web.post("/tarakania-rpg-bot-webhook", update_webhook_endpoint)]
+    )
 
     runner = web.AppRunner(app)
     app["runner"] = runner
 
     await runner.setup()
-    site = web.TCPSite(runner, host, port)
+    site = web.TCPSite(runner, bot.args.wh_host, bot.args.wh_port)
     await site.start()
 
-    print(f"Listening for github events on port {port}")
+    print(f"Listening for github events on port {bot.args.wh_port}")
 
     await notify_restart_completed(bot)

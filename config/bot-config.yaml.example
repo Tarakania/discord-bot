@@ -1,5 +1,6 @@
 config-version: 0
 default-prefix: "t!"
 discord-token: ""
+discord-beta-token: ""
 github-webhook-token: ""
 owners: []
