@@ -37,9 +37,11 @@ async def parse_github_request(req: web.Request) -> None:
 
     # TODO: compare refs, iterate over commits and decide if restart is needed
 
-    await notify_restart_started(
-        req.app["bot"], commits_count=payload.get("size", -1)
-    )
+    commits_count = payload.get("size", -1)
+    if commits_count == -1:
+        commits_count = len(payload.get("commits", [])) or -1
+
+    await notify_restart_started(req.app["bot"], commits_count=commits_count)
 
 
 async def git_pull() -> None:
