@@ -55,26 +55,38 @@ async def git_pull() -> None:
 async def notify_restart_started(
     bot: "TarakaniaRPG", commits_count: int = -1
 ) -> None:
+    if not bot.args.enable_notifications:
+        return
+
     update_channel = bot.get_channel(UPDATE_CHANNEL_ID)
 
     message_base = "\N{INFORMATION SOURCE} Restarting bot to apply "
     if commits_count == -1:
-        message = message_base + "updates"
+        shutdown_message = message_base + "updates"
     else:
-        message = message_base + f"**{commits_count}** commits"
+        shutdown_message = message_base + f"**{commits_count}** commits"
 
-    await update_channel.send(message)
+    try:
+        await update_channel.send(shutdown_message)
+    except Exception:
+        print(f"Failed to deliver notification: {shutdown_message}")
 
 
-async def notify_restart_completed(bot: "TarakaniaRPG") -> None:
+async def notify_boot_completed(bot: "TarakaniaRPG") -> None:
+    if not bot.args.enable_notifications:
+        return
+
     update_channel = bot.get_channel(UPDATE_CHANNEL_ID)
 
-    boot_message = "\N{INFORMATION SOURCE} Bot successfully restarted."
+    boot_message = "\N{INFORMATION SOURCE} Bot successfully lohgged in."
 
     if not bot.args.production:
         boot_message += "\n\N{WARNING SIGN} Working in debug mode."
 
-    await update_channel.send(boot_message)
+    try:
+        await update_channel.send(boot_message)
+    except Exception:
+        print(f"Failed to deliver notification: {boot_message}")
 
 
 async def wait_clean_exit(app: web.Application) -> None:
@@ -117,4 +129,4 @@ async def start_updater(bot: "TarakaniaRPG") -> None:
 
     print(f"Listening for github events on port {bot.args.wh_port}")
 
-    await notify_restart_completed(bot)
+    await notify_boot_completed(bot)

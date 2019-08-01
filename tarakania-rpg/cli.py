@@ -25,5 +25,15 @@ argparser.add_argument(
     action="store_true",
     help="Run bot in production mode if added. Disables debug functions",
 )
+argparser.add_argument(
+    "--enable-notifications",
+    action="store_true",
+    help="Enables update channel notifications. Defaults to false in debug mode. Otherwise true",
+)
 
 args = argparser.parse_args()
+
+# конечная обработка аргументов
+
+if args.production:
+    args.enable_notifications = True
