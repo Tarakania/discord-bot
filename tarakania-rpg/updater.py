@@ -78,7 +78,7 @@ async def notify_boot_completed(bot: "TarakaniaRPG") -> None:
 
     update_channel = bot.get_channel(UPDATE_CHANNEL_ID)
 
-    boot_message = "\N{INFORMATION SOURCE} Bot successfully lohgged in."
+    boot_message = "\N{INFORMATION SOURCE} Bot successfully logged in."
 
     if not bot.args.production:
         boot_message += "\n\N{WARNING SIGN} Working in debug mode."
