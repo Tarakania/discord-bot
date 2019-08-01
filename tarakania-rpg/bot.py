@@ -11,6 +11,13 @@ from cli import args
 from updater import start_updater
 from config import get_bot_config
 
+TARAKANIA_RPG_ASCII_ART = r""" _____                _               _           __    ___  ___
+/__   \__ _ _ __ __ _| | ____ _ _ __ (_) __ _    /__\  / _ \/ _ \
+  / /\/ _` | '__/ _` | |/ / _` | '_ \| |/ _` |  / \// / /_)/ /_\/
+ / / | (_| | | | (_| |   < (_| | | | | | (_| | / _  \/ ___/ /_\\
+ \/   \__,_|_|  \__,_|_|\_\__,_|_| |_|_|\__,_| \/ \_/\/   \____/
+"""
+
 
 class TarakaniaRPG(discord.AutoShardedClient):
     def __init__(self, **kwargs: Any):
@@ -51,7 +58,8 @@ class TarakaniaRPG(discord.AutoShardedClient):
         print(
             f"Running in {'production' if self.args.production else 'debug'} mode"
         )
-        print("Bot is ready")
+        print(TARAKANIA_RPG_ASCII_ART)
+        print(f"Bot is ready to operate as {self.user}")
 
     async def on_message(self, msg: discord.Message) -> None:
         used_prefix = None
