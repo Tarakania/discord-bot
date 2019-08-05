@@ -4,3 +4,8 @@ discord-token: ""
 discord-beta-token: ""
 github-webhook-token: ""
 owners: []
+
+user: ""
+password: ""
+database: ""
+host: ""
