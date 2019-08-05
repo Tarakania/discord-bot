@@ -4,8 +4,9 @@ discord-token: ""
 discord-beta-token: ""
 github-webhook-token: ""
 owners: []
-
-user: ""
-password: ""
-database: ""
-host: ""
+postgresql:
+  host: ""
+  port: "5432"
+  user: "tarakania"
+  password: ""
+  database: "tarakania"

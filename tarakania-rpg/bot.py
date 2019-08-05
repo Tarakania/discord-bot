@@ -3,13 +3,11 @@ import time
 from datetime import timedelta
 from typing import Any
 
-from sql import connection_db
+from sql import create_pg_connection, get_info_by_nickname
 
 import git
 import discord
 import humanize
-import asyncpg
-import asyncio
 
 
 from cli import args
@@ -31,6 +29,8 @@ class TarakaniaRPG(discord.AutoShardedClient):
         self.config = get_bot_config(args.config_file)
         self.prefixes = {self.config["default-prefix"]}
         self.owners = set(self.config["owners"])
+
+        self.repo = git.Repo()
 
         super().__init__(**kwargs)
 
@@ -55,6 +55,9 @@ class TarakaniaRPG(discord.AutoShardedClient):
 
     async def on_ready(self) -> None:
         await start_updater(self)
+
+        self.pg = await create_pg_connection(self.config["postgresql"])
+
         await self.prepare_prefixes()
 
         print(
@@ -98,27 +101,21 @@ class TarakaniaRPG(discord.AutoShardedClient):
             )
 
             await msg.channel.send(message)
-        elif command == 'info':
+        elif command == "info":
             nickname = args[1].lower()
-            con = await connection_db(self.config)
-            sql = "SELECT*FROM statyPlayers WHERE nickname = '{0}';".format(nickname)
-            values = await con.fetchrow(sql)
+            info = await get_info_by_nickname(nickname, self.pg)
 
-            message = str(
-                "Раса: " + values['race'] +
-                "\nКласс: " + values['class'] +
-                "\nУровень: " + str(values['level']) +
-                "\nОпыт: " + str(values['experience']) +
-                "\nОчки действия: " + str(values['actionpoints']) +
-                "\nСила: " + str(values['force']) +
-                "\nСила магии: " + str(values['forcemagic'])+
-                "\nЛовкость: " + str(values['agility']) +
-                "\nБроня: " + str(values['armor']) +
-                "\nМана: " + str(values['mana']) +
-                "\nЗдоровье: " + str(values['health']) +
-                "\nДеньги: " + str(values['money'])
-            )
+            message = f"""Раса: {info["race"]}
+                Класс: {info["class"]}
+                Уровень: {info["level"]}
+                Опыт: {info["experience"]}
+                Очки действия: {info["actionpoints"]}
+                Сила: {info["force"]}
+                Сила магии: {info["forcemagic"]}
+                Ловкость: {info["agility"]}
+                Броня: {info["armor"]}
+                Мана: {info["mana"]}
+                Здоровье: {info["health"]}
+                Деньги: {info["money"]}"""
 
             await msg.channel.send(message)
-
-

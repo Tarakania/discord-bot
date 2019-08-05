@@ -1,25 +1,17 @@
-import asyncio
 import asyncpg
 
-async def connection_db(config):
-    user = config["user"]
-    password = config["password"]
-    database = config["database"]
-    host = config["host"]
-    con = await asyncpg.connect(user=user, password=password, database=database, host=host)
-    async with con.transaction():
-        return con
+from typing import Dict
 
 
-async def read(nickname):
-    con = await connection_db()
-    sql = "SELECT*FROM statyPlayers WHERE nickname = '{0}';".format(nickname)
-    read_sql = await con.fetchrow(sql)
-    return read_sql
+async def create_pg_connection(
+    pg_config: Dict[str, str]
+) -> asyncpg.Connection:
+    return await asyncpg.create_pool(**pg_config)
 
 
-async def main():
-    tsk1 = asyncio.create_task(connection_db())
-    tsk2 = asyncio.create_task(read())
+async def get_info_by_nickname(
+    nickname: str, conn: asyncpg.connection
+) -> asyncpg.Record:
+    sql = f"SELECT * FROM statyPlayers WHERE nickname = '{nickname}'"
 
-    await asyncio.gather(tsk1, tsk2)
+    return await conn.fetchrow(sql)
