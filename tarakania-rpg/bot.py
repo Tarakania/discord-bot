@@ -3,9 +3,14 @@ import time
 from datetime import timedelta
 from typing import Any
 
+from sql import connection_db
+
 import git
 import discord
 import humanize
+import asyncpg
+import asyncio
+
 
 from cli import args
 from updater import start_updater
@@ -24,11 +29,8 @@ class TarakaniaRPG(discord.AutoShardedClient):
         self.args = args
 
         self.config = get_bot_config(args.config_file)
-
         self.prefixes = {self.config["default-prefix"]}
         self.owners = set(self.config["owners"])
-
-        self.repo = git.Repo()
 
         super().__init__(**kwargs)
 
@@ -96,3 +98,27 @@ class TarakaniaRPG(discord.AutoShardedClient):
             )
 
             await msg.channel.send(message)
+        elif command == 'info':
+            nickname = args[1].lower()
+            con = await connection_db(self.config)
+            sql = "SELECT*FROM statyPlayers WHERE nickname = '{0}';".format(nickname)
+            values = await con.fetchrow(sql)
+
+            message = str(
+                "Раса: " + values['race'] +
+                "\nКласс: " + values['class'] +
+                "\nУровень: " + str(values['level']) +
+                "\nОпыт: " + str(values['experience']) +
+                "\nОчки действия: " + str(values['actionpoints']) +
+                "\nСила: " + str(values['force']) +
+                "\nСила магии: " + str(values['forcemagic'])+
+                "\nЛовкость: " + str(values['agility']) +
+                "\nБроня: " + str(values['armor']) +
+                "\nМана: " + str(values['mana']) +
+                "\nЗдоровье: " + str(values['health']) +
+                "\nДеньги: " + str(values['money'])
+            )
+
+            await msg.channel.send(message)
+
+
