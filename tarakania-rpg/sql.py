@@ -12,6 +12,6 @@ async def create_pg_connection(
 async def get_info_by_nickname(
     nickname: str, conn: asyncpg.connection
 ) -> asyncpg.Record:
-    sql = f"SELECT * FROM statyPlayers WHERE nickname = '{nickname}'"
-
-    return await conn.fetchrow(sql)
+    return await conn.fetchrow(
+        "SELECT * FROM statyPlayers WHERE nickname = '$1'", nickname
+    )
