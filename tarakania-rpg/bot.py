@@ -3,7 +3,7 @@ import time
 from datetime import timedelta
 from typing import Any
 
-from sql import create_pg_connection, get_info_by_nickname
+from sql import create_pg_connection, get_info_by_nick
 
 import git
 import discord
@@ -13,6 +13,8 @@ import humanize
 from cli import args
 from updater import start_updater
 from config import get_bot_config
+from utils.xp import xp_to_level, level_to_xp
+
 
 TARAKANIA_RPG_ASCII_ART = r""" _____                _               _           __    ___  ___
 /__   \__ _ _ __ __ _| | ____ _ _ __ (_) __ _    /__\  / _ \/ _ \
@@ -102,20 +104,19 @@ class TarakaniaRPG(discord.AutoShardedClient):
 
             await msg.channel.send(message)
         elif command == "info":
-            nickname = args[1].lower()
-            info = await get_info_by_nickname(nickname, self.pg)
+            nick = args[1]
+            info = await get_info_by_nick(nick, self.pg)
 
-            message = f"""Раса: {info["race"]}
-                Класс: {info["class"]}
-                Уровень: {info["level"]}
-                Опыт: {info["experience"]}
-                Очки действия: {info["actionpoints"]}
-                Сила: {info["force"]}
-                Сила магии: {info["forcemagic"]}
-                Ловкость: {info["agility"]}
-                Броня: {info["armor"]}
-                Мана: {info["mana"]}
-                Здоровье: {info["health"]}
-                Деньги: {info["money"]}"""
+            if info is None:
+                message = "Персонаж с таким именем не найден"
+            else:
+                message = f"""Информация о персонаже **{info["nick"]}**:
+
+Раса: **{info["race"]}**
+Класс: **{info["class"]}**
+Уровень: **{xp_to_level(info["xp"])}**
+Опыта до следующего уровня: **{level_to_xp(xp_to_level(info["xp"]) + 1) - info["xp"]}**
+Деньги: **{info["money"]}**
+Размер инвентаря: **{len(info["inventory"])}**"""
 
             await msg.channel.send(message)
