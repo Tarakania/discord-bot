@@ -3,17 +3,26 @@ import time
 from datetime import timedelta
 from typing import Any
 
-from sql import create_pg_connection, get_info_by_nick
-
 import git
 import discord
+import asyncpg
 import humanize
 
-
+from sql import (
+    create_pg_connection,
+    get_player_info_by_nick,
+    get_player_info_by_discord_id,
+    create_character,
+    delete_character,
+)
 from cli import args
 from updater import start_updater
 from config import get_bot_config
 from utils.xp import xp_to_level, level_to_xp
+
+from races import races
+from classes import classes
+from locations import locations
 
 
 TARAKANIA_RPG_ASCII_ART = r""" _____                _               _           __    ___  ___
@@ -68,7 +77,7 @@ class TarakaniaRPG(discord.AutoShardedClient):
         print(TARAKANIA_RPG_ASCII_ART)
         print(f"Bot is ready to operate as {self.user}")
 
-    async def on_message(self, msg: discord.Message) -> None:
+    async def on_message(self, msg: discord.Message) -> None:  # noqa: C901
         used_prefix = None
 
         for prefix in self.prefixes:
@@ -104,19 +113,83 @@ class TarakaniaRPG(discord.AutoShardedClient):
 
             await msg.channel.send(message)
         elif command == "info":
-            nick = args[1]
-            info = await get_info_by_nick(nick, self.pg)
-
-            if info is None:
-                message = "Персонаж с таким именем не найден"
+            if len(args) == 1:
+                info = await get_player_info_by_discord_id(
+                    self.pg, msg.author.id
+                )
+                if info is None:
+                    await msg.channel.send("У вас нет персонажа")
+                    return
             else:
-                message = f"""Информация о персонаже **{info["nick"]}**:
+                info = await get_player_info_by_nick(self.pg, args[1])
 
-Раса: **{info["race"]}**
-Класс: **{info["class"]}**
+                if info is None:
+                    await msg.channel.send("Персонаж с таким именем не найден")
+                    return
+
+            e = discord.Embed(
+                title="Информация о персонаже",
+                description=f"""Раса: **{races[info["race"]]["name"]}**
+Класс: **{classes[info["class"]]["name"]}**
+Локация: **{locations[info["location"]]["name"]}**
 Уровень: **{xp_to_level(info["xp"])}**
 Опыта до следующего уровня: **{level_to_xp(xp_to_level(info["xp"]) + 1) - info["xp"]}**
 Деньги: **{info["money"]}**
-Размер инвентаря: **{len(info["inventory"])}**"""
+Размер инвентаря: **{len(info["inventory"])}**""",
+            )
+            e.set_author(name=info["nick"])
 
-            await msg.channel.send(message)
+            await msg.channel.send(embed=e)
+
+        elif command == "delete":
+            await delete_character(self.pg, msg.author.id)
+            await msg.channel.send("Ваш персонаж удалён")
+        elif command == "register":
+            try:
+                nick, race, class_ = args[1:]
+            except ValueError:
+                await msg.channel.send(
+                    "Недостаточно аргументов.\nВведите имя, расу и класс персонажа"
+                )
+                return
+
+            if not (1 <= len(nick) <= 128):
+                await msg.channel.send(
+                    f"Имя персонажа должно быть в пределах от **1** до **128** символов.\nВы ввели **{len(nick)}**"
+                )
+
+            is_race_valid = False
+            for race_id, r in races.items():
+                if r["name"] == race:
+                    is_race_valid = True
+                    break
+
+            if not is_race_valid:
+                await msg.channel.send(
+                    f"Выберите название расы из: **{', '.join(i['name'] for i in races.values())}**"
+                )
+                return
+
+            is_class_valid = False
+            for class_id, c in classes.items():
+                if c["name"] == class_:
+                    is_class_valid = True
+                    break
+
+            if not is_class_valid:
+                await msg.channel.send(
+                    f"Выберите название класса из: **{', '.join(i['name'] for i in classes.values())}**"
+                )
+                return
+
+            try:
+                await create_character(
+                    self.pg, msg.author.id, nick, race_id, class_id
+                )
+            except asyncpg.UniqueViolationError:  # TODO: parse e.detail to get problematic key or check beforehand
+                await msg.channel.send(
+                    "Персонаж с таким именем уже существует или у вас уже есть персонаж"
+                )
+                return
+
+            await msg.channel.send("Персонаж создан")
