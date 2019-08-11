@@ -30,6 +30,11 @@ argparser.add_argument(
     action="store_true",
     help="Enables update channel notifications. Defaults to false in debug mode. Otherwise true",
 )
+argparser.add_argument(
+    "--enable-updater",
+    action="store_true",
+    help="Enables updater. Defaults to false in debug mode. Otherwise true",
+)
 
 args = argparser.parse_args()
 
@@ -37,3 +42,4 @@ args = argparser.parse_args()
 
 if args.production:
     args.enable_notifications = True
+    args.enable_updater = True

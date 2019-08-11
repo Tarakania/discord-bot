@@ -111,6 +111,9 @@ async def update_webhook_endpoint(req: web.Request) -> web.Response:
 
 
 async def start_updater(bot: "TarakaniaRPG") -> None:
+    if not bot.args.enable_updater:
+        return
+
     app = web.Application()
 
     app["bot"] = bot
