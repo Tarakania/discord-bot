@@ -1,10 +1,6 @@
 # Config files
 *.json
-*.yaml
-*.yml
-
-!.travis.yml
-!tarakania-rpg/configs/*.yaml
+config/*.yaml
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
