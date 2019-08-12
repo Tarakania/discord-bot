@@ -7,3 +7,4 @@ owner_only: true
 arguments:
   - name: команда
     type: command
+    greedy: yes

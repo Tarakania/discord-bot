@@ -7,14 +7,17 @@ from context import Context
 
 class Command(BaseCommand):
     async def run(self, ctx: Context, args: Arguments) -> CommandResult:
-        try:
-            command = await self.bot._handler.reload_command(args[0].name)
-        except Exception as e:
-            return (
-                f"Ошибка при перезагрузке: **{e.__class__.__name__}: {e}**\n"
-                f"```{traceback.format_exc()}```"
-            )
+        for command in args:
+            try:
+                reloaded = await self.bot._handler.reload_command(args[0].name)
+            except Exception as e:
+                await ctx.send(
+                    f"Ошибка при перезагрузке **{command.name}**: **{e.__class__.__name__}: {e}**\n"
+                    f"```{traceback.format_exc()}```"
+                )
 
-        assert command is not None
+            assert reloaded is not None
 
-        return f"Перезагружена команда **{command.name}**"
+            await ctx.send(f"Перезагружена команда **{reloaded.name}**")
+
+        return None
