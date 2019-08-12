@@ -1,6 +1,7 @@
 # Config files
 *.json
 config/*.yaml
+!config/*.example.yaml
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

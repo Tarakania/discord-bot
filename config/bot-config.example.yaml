@@ -10,3 +10,7 @@ postgresql:
   user: "tarakania"
   password: ""
   database: "tarakania"
+redis:
+  host: ""
+  password: ""
+  port: "6379"
