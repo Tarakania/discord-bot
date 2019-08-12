@@ -2,10 +2,13 @@ from __future__ import annotations
 
 from typing import Any, Dict, Tuple, TYPE_CHECKING
 
+import discord
+
 from player import Player as Player_
 from context import Context
 from parser.exceptions import ConvertError
 from sql import get_player_info_by_nick
+from regexes import USER_MENTION_OR_ID_REGEX
 
 
 if TYPE_CHECKING:
@@ -128,3 +131,70 @@ class Player(Converter):
             raise ConvertError(value, self, "Игрок с таким ником не найден")
 
         return Player_.from_data(data)
+
+
+class User(Converter):
+    name = "user"
+
+    async def convert(self, ctx: Context, value: str) -> discord.User:
+        user = None
+        id_match = USER_MENTION_OR_ID_REGEX.fullmatch(value)
+
+        if id_match is not None:
+            user_id = int(id_match.group(1) or id_match.group(0))
+            if ctx.guild is not None:
+                user = ctx.guild.get_member(user_id)
+            if user is None:
+                # double check of ctx.guild, but we need to ensure we won't
+                # get member object from other guild by accident
+                for guild in ctx.bot.guilds or []:
+                    user = guild.get_member(user_id)
+                    if user is not None:
+                        break
+
+            if user is None:
+                try:
+                    user = await ctx.bot.fetch_user(user_id)
+                except discord.NotFound:
+                    pass
+
+        if user is not None:
+            return user
+
+        if ctx.guild is None:
+            return None
+
+        found = []
+        pattern = value.lower()
+
+        for member in ctx.guild.members:
+            match_pos = -1
+            if member.nick is not None:
+                match_pos = member.nick.lower().find(pattern)
+            if match_pos == -1:
+                match_pos = f"{member.name.lower()}#{member.discriminator}".find(
+                    pattern
+                )
+            if match_pos == -1:
+                continue
+            found.append((member, match_pos))
+
+        found = list(set(found))
+        found.sort(
+            key=lambda x: (
+                # last member message timestamp, lower delta is better
+                # TODO?
+                # index of match in string, smaller value is better
+                -x[1],
+                # member status, not 'offline' is better
+                str(x[0].status) != "offline",
+                # guild join timestamp, lower delta is better
+                x[0].joined_at,
+            ),
+            reverse=True,
+        )
+
+        if found:
+            return found[0][0]
+
+        raise ConvertError(value, self, "Пользователь не найден")
