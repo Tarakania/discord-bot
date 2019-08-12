@@ -23,12 +23,19 @@ class ConvertError(ParserError):
     def __init__(
         self,
         value: Any,
-        argument: "Converter",
-        *args: Any,
+        converter: "Converter",
+        message: str = "",
         original_exc: Optional[BaseException] = None,
     ) -> None:
-        super().__init__(*args)
+        super().__init__(message)
 
         self.value = value
-        self.argument = argument
+        self.converter = converter
         self.original_exc = original_exc
+        self.message = message
+
+    def __str__(self) -> str:
+        if self.message:
+            return self.message
+
+        return f"Невозможно привести аргумент к типу **{self.converter.display_name}**"
