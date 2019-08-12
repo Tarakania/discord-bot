@@ -75,7 +75,7 @@ class Converter(metaclass=_ConverterMeta):
     def __str__(self) -> str:
         extra_markers = ""
         if self.greedy:
-            extra_markers += " ..."
+            extra_markers += "..."
 
         if self.default_value is not None:
             extra_markers += f"={self.default_value}"

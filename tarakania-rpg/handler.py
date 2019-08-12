@@ -1,9 +1,10 @@
 import os
+import re
 import traceback
 import importlib
 
 from types import ModuleType
-from typing import TYPE_CHECKING, Dict, Optional, Tuple, Set
+from typing import TYPE_CHECKING, Dict, Optional, Tuple, Set, Pattern
 
 import discord
 
@@ -25,8 +26,6 @@ class Handler:
     def __init__(self, bot: "TarakaniaRPG"):
         self.bot = bot
 
-        self._default_prefixes: Tuple[str, ...] = ()
-        self._default_dm_prefixes: Tuple[str, ...] = ()
         self._custom_prefixes: Dict[int, str] = {}
         self._commands: Dict[str, BaseCommand] = {}
         self._imported: Dict[str, ModuleType] = {}
@@ -37,7 +36,7 @@ class Handler:
         command_name = command_path.rsplit(os.sep, 1)[1][8:-3]
 
         try:
-            print(f"{command_name + ': ':<20}importing....", end="")
+            print(f"{command_name:>12}....importing....", end="")
             imported = importlib.import_module(
                 command_path.replace(os.sep, ".")[:-3]
             )
@@ -69,7 +68,7 @@ class Handler:
         old_aliases = self._commands[name].aliases
 
         try:
-            print(f"{name + ': ':<20}reloading....", end="")
+            print(f"{name:>12}....reloading....", end="")
             reloaded = importlib.reload(imported)
             print("creating....", end="")
             command = getattr(reloaded, "Command")(self.bot)
@@ -104,46 +103,61 @@ class Handler:
         print(">>>>> Started loading commands")
         for command_path in commands_found:
             await self.load_command(command_path)
-
         print("<<<<< Finished loading commands")
 
     async def prepare_prefixes(self) -> None:
         bot_id = self.bot.user.id
-        self._default_prefixes = (
-            self.bot.config["default-prefix"],
+
+        prefixes = (
+            re.escape(self.bot.config["default-prefix"]),
             f"<@{bot_id}>",
             f"<@!{bot_id}>",
         )
-        self._default_dm_prefixes = self._default_prefixes + ("",)
+
+        self._prefixes_regex = re.compile(
+            fr"^({'|'.join(prefixes)})\s*", re.IGNORECASE
+        )
+        self._dm_prefixes_regex = re.compile(
+            fr"^({'|'.join(prefixes+('',))})\s*", re.IGNORECASE
+        )
+
+        await self.prepare_custom_prefixes()
 
         print("Prepareded prefixes")
+
+    async def prepare_custom_prefixes(self) -> None:
+        # TODO
+
+        pass
 
     def separate_prefix(
         self, content: str, guild_id: Optional[int]
     ) -> Tuple[Optional[str], str]:
-        lower_content = content.lower()
+        def regex_match(
+            expr: Pattern[str], content: str
+        ) -> Tuple[Optional[str], str]:
+            match = expr.search(content)
+            if match is None:
+                return None, content
+
+            return match[1], content[match.end(0) :]
 
         if guild_id is None:
-            prefixes = self._default_dm_prefixes
-        else:
-            custom_prefix = self._custom_prefixes.get(guild_id)
-            if custom_prefix is None:
-                prefixes = self._default_prefixes
-            else:
-                prefixes = (custom_prefix,)
+            return regex_match(self._dm_prefixes_regex, content)
 
-        matched_prefix = None
-        for p in prefixes:
-            if lower_content.startswith(p):
-                matched_prefix = p
-                break
+        custom_prefix = self._custom_prefixes.get(guild_id)
+        if custom_prefix is None:
+            return regex_match(self._prefixes_regex, content)
 
-        if matched_prefix is None:
-            return (None, content)
+        lower_content = content.lower()
+        if lower_content.startswith(custom_prefix):
+            return (custom_prefix, content[len(custom_prefix) :].rstrip())
 
-        return (matched_prefix, content[len(matched_prefix) :])
+        return None, content
 
     async def process_message(self, msg: discord.Message) -> None:
+        await self.bot.wait_until_ready()
+
         if msg.author.bot:
             return
 
