@@ -39,7 +39,7 @@ class Context:
         *,
         channel: Optional[discord.TextChannel] = None,
         **kwargs: Any,
-    ) -> Optional[discord.Message]:
+    ) -> discord.Message:
         target = channel if channel is not None else self.channel
 
         return await target.send(content=content, **kwargs)
