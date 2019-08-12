@@ -59,7 +59,7 @@ class BaseCommand:
         for i in data.get("arguments", ()):
             self.arguments.append(Converter.new(i))
 
-    async def get_help(self, ctx: Context) -> str:
+    async def get_usage(self, ctx: Context) -> str:
         prefix = ctx.local_prefix
 
         if len(self.aliases) > 1:
@@ -68,9 +68,13 @@ class BaseCommand:
             aliases = self.aliases[0]
 
         arguments = " ".join(str(c) for c in self.arguments)
-        help_text = self.short_help
 
-        return f"```\n" f"{prefix}{aliases} {arguments}\n\n" f"{help_text}```"
+        return f"{prefix}{aliases} {arguments}"
+
+    async def get_help(self, ctx: Context) -> str:
+        usage = await self.get_usage(ctx)
+
+        return f"```\n" f"{usage}\n\n" f"{self.short_help}```"
 
     async def run(self, ctx: Context, args: Arguments) -> CommandResult:
         raise NotImplementedError

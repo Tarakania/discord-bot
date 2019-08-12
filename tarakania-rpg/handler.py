@@ -166,7 +166,11 @@ class Handler:
             await self.run_command_checks(command, ctx)
             await args.convert(ctx, command.arguments)
         except (CommandCheckError, ParserError) as e:
-            return await self.process_response(str(e), ctx)
+            return await self.process_response(
+                f"Ошибка при обработке команды **{command.name}**: {e}\n"
+                f"Правила вызова команды: `{await command.get_usage(ctx)}`",
+                ctx,
+            )
 
         print(
             f"Invoking command {command.name} from {ctx.author.id} in channel {ctx.channel.id}"
