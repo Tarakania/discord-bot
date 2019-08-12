@@ -1,0 +1,7 @@
+name: help
+short_help: Предоставляет информацию о других командах
+
+arguments:
+  - name: команда
+    type: command
+    optional: yes

@@ -1,0 +1,10 @@
+name: register
+short_help: "Регистрирует персонажа"
+
+arguments:
+  - name: ник
+    type: string
+  - name: раса
+    type: string
+  - name: класс
+    type: string

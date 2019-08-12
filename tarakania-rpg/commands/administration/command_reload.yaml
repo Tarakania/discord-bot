@@ -1,0 +1,9 @@
+name: reload
+aliases: r
+short_help: "Позволяет перезагружать команды без остановки бота"
+hidden: true
+owner_only: true
+
+arguments:
+  - name: команда
+    type: command
