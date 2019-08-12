@@ -143,6 +143,9 @@ class Handler:
         return (matched_prefix, content[len(matched_prefix) :])
 
     async def process_message(self, msg: discord.Message) -> None:
+        if msg.author.bot:
+            return
+
         used_prefix, trimmed_content = self.separate_prefix(
             msg.content, msg.guild.id if msg.guild else None
         )
