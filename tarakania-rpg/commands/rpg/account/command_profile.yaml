@@ -1,4 +1,4 @@
-name: player
+name: profile
 short_help: Получение информации о игроке по нику
 
 arguments:
