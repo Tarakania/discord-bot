@@ -1,0 +1,9 @@
+name: command
+short_help: Показывает отладочную информацию
+hidden: yes
+
+arguments:
+  - name: debug
+    type: string
+    greedy: yes
+    optional: yes
