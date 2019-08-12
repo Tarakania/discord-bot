@@ -1,4 +1,5 @@
 import os
+import traceback
 import importlib
 
 from types import ModuleType
@@ -179,7 +180,16 @@ class Handler:
             f"Invoking command {command.name} from {ctx.author.id} in channel {ctx.channel.id}"
         )
 
-        await self.process_response(await command.run(ctx, args), ctx)
+        try:
+            await self.process_response(await command.run(ctx, args), ctx)
+        except Exception:
+            await self.process_response(
+                (
+                    f"Ошибка при выполнении команды **{command.name}**:\n"
+                    f"```{traceback.format_exc(3)}```"
+                ),
+                ctx,
+            )
 
     async def run_command_checks(
         self, command: BaseCommand, ctx: Context
