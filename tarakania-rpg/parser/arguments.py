@@ -80,7 +80,6 @@ class Arguments:
         self, index: Union[int, slice]
     ) -> Union[Any, List[Any]]:
         if len(self._args) - len(self._converted) != 1:
-            print(self._args, self._converted)
             raise RuntimeError(
                 "Bad number of converted values. Was 'convert' called?"
             )
