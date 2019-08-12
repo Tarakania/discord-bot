@@ -49,11 +49,14 @@ class BaseCommand:
         else:
             self.aliases = (self.name, *aliases)
 
-        self.short_help = data.get("short_help", "Нет информации")
+        self.short_help = data.get(
+            "short_help", "Описание команды отсутствует"
+        )
         self.long_help = data.get("long_help", "")
-        self.hidden = data.get("hidden", False)
         self.guild_only = data.get("guild_only", False)
         self.owner_only = data.get("owner_only", False)
+        # hidden by default if owner_only is set
+        self.hidden = data.get("hidden", self.owner_only)
 
         self.arguments = []
         for i in data.get("arguments", ()):

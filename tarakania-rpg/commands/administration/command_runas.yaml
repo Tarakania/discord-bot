@@ -1,6 +1,5 @@
 name: runas
 short_help: Запускает команду от имени пользователя
-hidden: yes
 owner_only: yes
 
 arguments:

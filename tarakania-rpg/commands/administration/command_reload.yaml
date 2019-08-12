@@ -1,7 +1,6 @@
 name: reload
 aliases: r
 short_help: "Перезагружает команды без остановки бота"
-hidden: yes
 owner_only: yes
 
 arguments:
