@@ -1,0 +1,14 @@
+name: runas
+short_help: Запускает команду от имени пользователя
+hidden: yes
+owner_only: yes
+
+arguments:
+  - name: пользователь
+    type: user
+  - name: команда
+    type: command
+  - name: аргумент
+    type: string
+    optional: yes
+    greedy: yes
