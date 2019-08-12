@@ -1,12 +1,10 @@
-import asyncpg
-
 from rpg.races import races
 from rpg.classes import classes
 
+from player import Player, NickOrIDUsed
 from command import BaseCommand, CommandResult
 from parser.arguments import Arguments
 from context import Context
-from sql import create_character
 
 
 class Command(BaseCommand):
@@ -37,10 +35,10 @@ class Command(BaseCommand):
             return f"Выберите название класса из: **{', '.join(i['name'] for i in classes.values())}**"
 
         try:
-            await create_character(
+            await Player.create(
                 self.bot.pg, ctx.author.id, nick, race_id, class_id
             )
-        except asyncpg.UniqueViolationError:  # TODO: parse e.detail to get problematic key or check beforehand
+        except NickOrIDUsed:
             return "Персонаж с таким именем уже существует или у вас уже есть персонаж"
 
         return "Персонаж создан"

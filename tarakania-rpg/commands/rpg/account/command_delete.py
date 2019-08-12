@@ -1,11 +1,16 @@
+from player import Player, UnknownPlayer
+
 from command import BaseCommand, CommandResult
 from parser.arguments import Arguments
 from context import Context
 
-from sql import delete_character
-
 
 class Command(BaseCommand):
     async def run(self, ctx: Context, args: Arguments) -> CommandResult:
-        await delete_character(self.bot.pg, ctx.author.id)
+        try:
+            player = await Player.from_id(ctx.author.id, self.bot.pg)
+            await player.delete(self.bot.pg)
+        except UnknownPlayer:
+            return "У вас нет персонажа"
+
         return "Ваш персонаж удалён"

@@ -1,4 +1,5 @@
 name: profile
+aliases: p
 short_help: Получение информации о игроке по нику
 
 arguments:

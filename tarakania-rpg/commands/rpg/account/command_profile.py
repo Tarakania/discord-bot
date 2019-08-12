@@ -1,23 +1,19 @@
 import discord
 
 
-from player import Player
+from player import Player, UnknownPlayer
 from command import BaseCommand, CommandResult
 from parser.arguments import Arguments
 from context import Context
-from sql import get_player_info_by_discord_id
 
 
 class Command(BaseCommand):
     async def run(self, ctx: Context, args: Arguments) -> CommandResult:
         if len(args) == 0:
-            data = await get_player_info_by_discord_id(
-                self.bot.pg, ctx.author.id
-            )
-            if data is None:
+            try:
+                player = await Player.from_id(ctx.author.id, ctx.bot.pg)
+            except UnknownPlayer:
                 return "У вас нет персонажа"
-
-            player = Player.from_data(data)
         else:
             player = args[0]
 

@@ -4,10 +4,9 @@ from typing import Any, Dict, Tuple, TYPE_CHECKING
 
 import discord
 
-from player import Player as Player_
+from player import Player as Player_, UnknownPlayer
 from context import Context
 from parser.exceptions import ConvertError
-from sql import get_player_info_by_nick
 from regexes import USER_MENTION_OR_ID_REGEX
 
 
@@ -126,11 +125,10 @@ class Player(Converter):
     name = "player"
 
     async def convert(self, ctx: Context, value: str) -> Player_:
-        data = await get_player_info_by_nick(ctx.bot.pg, value)
-        if data is None:
+        try:
+            return await Player_.from_nick(value, ctx.bot.pg)
+        except UnknownPlayer:
             raise ConvertError(value, self, "Игрок с таким ником не найден")
-
-        return Player_.from_data(data)
 
 
 class User(Converter):
