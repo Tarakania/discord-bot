@@ -12,15 +12,15 @@ from sql import create_character
 class Command(BaseCommand):
     async def run(self, ctx: Context, args: Arguments) -> CommandResult:
         nick = args[0]
-        race = args[1]
-        class_ = args[2]
+        race = args[1].lower()
+        class_ = args[2].lower()
 
         if not (1 <= len(nick) <= 128):
             return f"Имя персонажа должно быть в пределах от **1** до **128** символов.\nВы ввели **{len(nick)}**"
 
         is_race_valid = False
         for race_id, r in races.items():
-            if r["name"] == race:
+            if r["name"].lower() == race:
                 is_race_valid = True
                 break
 
@@ -29,7 +29,7 @@ class Command(BaseCommand):
 
         is_class_valid = False
         for class_id, c in classes.items():
-            if c["name"] == class_:
+            if c["name"].lower() == class_:
                 is_class_valid = True
                 break
 
