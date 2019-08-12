@@ -3,6 +3,7 @@ import traceback
 from command import BaseCommand, CommandResult
 from parser.arguments import Arguments
 from context import Context
+from utils.formatting import codeblock
 
 
 class Command(BaseCommand):
@@ -13,7 +14,7 @@ class Command(BaseCommand):
             except Exception as e:
                 await ctx.send(
                     f"Ошибка при перезагрузке **{command.name}**: **{e.__class__.__name__}: {e}**\n"
-                    f"```{traceback.format_exc()}```"
+                    f"{codeblock(traceback.format_exc())}"
                 )
 
             assert reloaded is not None

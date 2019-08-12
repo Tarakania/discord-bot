@@ -6,6 +6,7 @@ from datetime import timedelta
 from command import BaseCommand, CommandResult
 from parser.arguments import Arguments
 from context import Context
+from utils.formatting import codeblock
 
 
 class Command(BaseCommand):
@@ -17,7 +18,7 @@ class Command(BaseCommand):
         commit_hash = self.bot.repo.head.object.hexsha
 
         return (
-            f"Latest commit made {humanize.naturaltime(timedelta(seconds=time.time() - commit_date))} by **{committer_name}**: ```"
-            f"{commit_summary}```"
+            f"Latest commit made {humanize.naturaltime(timedelta(seconds=time.time() - commit_date))} by **{committer_name}**:"
+            f"{codeblock(commit_summary)}"
             f"URL: <{repo_url}/commit/{commit_hash}>"
         )

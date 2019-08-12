@@ -3,6 +3,7 @@ import time
 from command import BaseCommand, CommandResult
 from parser.arguments import Arguments
 from context import Context
+from utils.formatting import codeblock
 
 
 class Command(BaseCommand):
@@ -25,11 +26,11 @@ class Command(BaseCommand):
 
         return await msg.edit(
             content=(
-                f"```\n"
-                f"Receive diff: {round(receive_diff / 1000)}ms\n"
-                f"Message send: {round(send_diff * 1000)}ms\n"
-                f"Total diff:   {round(total_diff * 1000)}ms\n"
-                f"WS latency:   {round(self.bot.latency * 1000)}ms\n"
-                f"```"
+                codeblock(
+                    f"Receive diff: {round(receive_diff / 1000)}ms\n"
+                    f"Message send: {round(send_diff * 1000)}ms\n"
+                    f"Total diff:   {round(total_diff * 1000)}ms\n"
+                    f"WS latency:   {round(self.bot.latency * 1000)}ms\n"
+                )
             )
         )
