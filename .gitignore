@@ -1,7 +1,6 @@
 # Config files
 *.json
-config/*.yaml
-!config/*.example.yaml
+tarakania_rpg/data/bot-config.yaml
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
