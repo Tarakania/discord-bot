@@ -1,7 +1,12 @@
+import os
 import argparse
 
 from pathlib import Path
 
+from constants import DATA_DIR
+
+
+DEFAULT_CONFIG_PATH = os.sep.join((DATA_DIR, "bot-config.yaml"))
 
 argparser = argparse.ArgumentParser(description="Tarakania RPG discord bot")
 argparser.add_argument(
@@ -17,8 +22,8 @@ argparser.add_argument(
 argparser.add_argument(
     "--config-file",
     type=Path,
-    default=Path("config/bot-config.yaml"),
-    help="Path to the config file. Defaults to config/bot-config.yaml",
+    default=Path(DEFAULT_CONFIG_PATH),
+    help=f"Path to the config file. Defaults to {DEFAULT_CONFIG_PATH}",
 )
 argparser.add_argument(
     "--production",

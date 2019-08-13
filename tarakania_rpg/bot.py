@@ -40,7 +40,7 @@ class TarakaniaRPG(discord.AutoShardedClient):
 
         if not token:
             raise RuntimeError(
-                f"Discord {'' if self.args.production else 'beta'}token is missing from config"
+                f"Discord {'' if self.args.production else 'beta '}token is missing from config"
             )
 
         super().run(token, *args, **kwargs)

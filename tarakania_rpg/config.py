@@ -3,11 +3,14 @@ import yaml
 
 from typing import Dict, Any
 
+from constants import DATA_DIR
+
 
 def get_bot_config(path: str) -> Dict[str, Any]:
     if not os.path.exists(path):
         raise FileNotFoundError(
-            f"Config file {path} is missing. Example config file is located at config/bot-config.yaml.example"
+            f"Config file {os.path.relpath(path)} is missing. "
+            f"Example config file is located at {os.path.relpath(DATA_DIR)}"
         )
 
     with open(path, "r") as f:

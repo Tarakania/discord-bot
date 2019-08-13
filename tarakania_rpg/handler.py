@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Dict, Optional, Tuple, Set, Pattern
 
 import discord
 
+from constants import BASE_DIR
 from command import BaseCommand, CommandResult
 from context import Context
 from parser.arguments import Arguments
@@ -16,6 +17,8 @@ from parser.exceptions import ParserError
 
 if TYPE_CHECKING:
     from bot import TarakaniaRPG
+
+COMMANDS_DIR = os.sep.join((BASE_DIR, "commands"))
 
 
 class CommandCheckError(Exception):
@@ -34,12 +37,11 @@ class Handler:
         self, command_path: str, raise_on_error: bool = False
     ) -> Optional[BaseCommand]:
         command_name = command_path.rsplit(os.sep, 1)[1][8:-3]
+        module_path = command_path.replace(os.sep, ".")[:-3]
 
         try:
             print(f"{command_name:>12}....importing....", end="")
-            imported = importlib.import_module(
-                command_path.replace(os.sep, ".")[:-3]
-            )
+            imported = importlib.import_module(module_path)
             print("creating....", end="")
             command = getattr(imported, "Command")(self.bot)
             print("done")
@@ -94,11 +96,14 @@ class Handler:
     async def load_all_commands(self) -> None:
         commands_found = []
 
-        for path, dirs, files in os.walk("tarakania-rpg/commands"):
+        for path, dirs, files in os.walk(COMMANDS_DIR):
             for f in files:
                 if f.startswith("command_") and f.endswith(".py"):
                     full_path = os.sep.join((path, f))
-                    commands_found.append(full_path.split(os.sep, 1)[1])
+                    relative_path = os.path.relpath(full_path)
+                    commands_found.append(
+                        os.sep.join(relative_path.split(os.sep)[1:])
+                    )
 
         print(">>>>> Started loading commands")
         for command_path in commands_found:
