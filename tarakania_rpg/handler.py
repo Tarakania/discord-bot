@@ -1,5 +1,6 @@
 import os
 import re
+import logging
 import traceback
 import importlib
 
@@ -21,6 +22,9 @@ if TYPE_CHECKING:
 COMMANDS_DIR = os.sep.join((BASE_DIR, "commands"))
 
 
+log = logging.getLogger(__name__)
+
+
 class CommandCheckError(Exception):
     pass
 
@@ -36,17 +40,16 @@ class Handler:
     async def load_command(
         self, command_path: str, raise_on_error: bool = False
     ) -> Optional[BaseCommand]:
-        command_name = command_path.rsplit(os.sep, 1)[1][8:-3]
+        name = command_path.rsplit(os.sep, 1)[1][8:-3]
         module_path = command_path.replace(os.sep, ".")[:-3]
 
         try:
-            print(f"{command_name:>12}....importing....", end="")
+            log.info(f"Loading {name}")
             imported = importlib.import_module(module_path)
-            print("creating....", end="")
+            log.debug(f"Creating instance of {name}")
             command = getattr(imported, "Command")(self.bot)
-            print("done")
-        except Exception as e:
-            print(f"error -> {e.__class__.__name__}: {e}")
+        except Exception:
+            log.exception(f"Error loading {name}")
 
             if raise_on_error:
                 raise
@@ -70,13 +73,12 @@ class Handler:
         old_aliases = self._commands[name].aliases
 
         try:
-            print(f"{name:>12}....reloading....", end="")
+            log.info(f"Reloading {name}")
             reloaded = importlib.reload(imported)
-            print("creating....", end="")
+            log.debug(f"Creating instance of {name}")
             command = getattr(reloaded, "Command")(self.bot)
-            print("done")
-        except Exception as e:
-            print(f"error -> {e.__class__.__name__}: {e}")
+        except Exception:
+            log.exception(f"Error reloading {name}")
 
             if raise_on_error:
                 raise
@@ -105,10 +107,10 @@ class Handler:
                         os.sep.join(relative_path.split(os.sep)[1:])
                     )
 
-        print(">>>>> Started loading commands")
+        log.info("Started loading commands")
         for command_path in commands_found:
             await self.load_command(command_path)
-        print("<<<<< Finished loading commands")
+        log.info(f"Loaded commands with {len(self._commands)} aliases")
 
     async def prepare_prefixes(self) -> None:
         bot_id = self.bot.user.id
@@ -128,7 +130,7 @@ class Handler:
 
         await self.prepare_custom_prefixes()
 
-        print("Prepareded prefixes")
+        log.debug("Prepareded prefixes")
 
     async def prepare_custom_prefixes(self) -> None:
         # TODO
@@ -183,10 +185,10 @@ class Handler:
         if command is None:
             return
 
-        ctx = Context(self.bot, msg, used_prefix, used_alias)
+        ctx = Context(self.bot, msg, command, used_prefix, used_alias)
 
         try:
-            await self.run_command_checks(command, ctx)
+            await self.run_command_checks(ctx)
             await args.convert(ctx, command.arguments)
         except (CommandCheckError, ParserError) as e:
             return await self.process_response(
@@ -195,13 +197,15 @@ class Handler:
                 ctx,
             )
 
-        print(
+        log.debug(
             f"Invoking command {command.name} from {ctx.author.id} in channel {ctx.channel.id}"
         )
 
         try:
             await self.process_response(await command.run(ctx, args), ctx)
         except Exception:
+            log.exception(f"Error calling command {command.name}")
+
             await self.process_response(
                 (
                     f"Ошибка при выполнении команды **{command.name}**:\n"
@@ -210,16 +214,14 @@ class Handler:
                 ctx,
             )
 
-    async def run_command_checks(
-        self, command: BaseCommand, ctx: Context
-    ) -> None:
-        if command.guild_only and ctx.guild is None:
+    async def run_command_checks(self, ctx: Context) -> None:
+        if ctx.command.guild_only and ctx.guild is None:
             raise CommandCheckError(
                 "Данную команду можно использовать только на сервере"
             )
 
         if (
-            command.owner_only
+            ctx.command.owner_only
             and ctx.author.id not in self.bot.config["owners"]
         ):
             raise CommandCheckError(
@@ -237,7 +239,7 @@ class Handler:
             return
         else:
             raise TypeError(
-                f"Invalid type returned by command: {type(response)}"
+                f"Invalid type returned by command {ctx.command.name}: {type(response)}"
             )
 
     def get_command(self, name: str) -> Optional[BaseCommand]:

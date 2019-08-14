@@ -1,4 +1,5 @@
 import os
+import logging
 import argparse
 
 from pathlib import Path
@@ -41,9 +42,46 @@ argparser.add_argument(
     help="Enables updater. Defaults to false in debug mode. Otherwise true",
 )
 
+
+def _verbosity_to_logging_level(string: str) -> int:
+    logging_levels = (
+        logging.FATAL,
+        logging.ERROR,
+        logging.WARNING,
+        logging.INFO,
+        logging.DEBUG,
+    )
+
+    value = int(string)
+
+    try:
+        return logging_levels[value]
+    except IndexError:
+        return logging.DEBUG
+
+
+argparser.add_argument(
+    "--verbose",
+    "-v",
+    action="count",
+    default=0,
+    help="Verbosity level. Supports stacking (-vvv)",
+)
+
+argparser.add_argument(
+    "--no-colors", action="store_true", help="Disables console colors"
+)
+
+argparser.add_argument(
+    "--test-logger", action="store_true", help="Perform logger test"
+)
+
 args = argparser.parse_args()
 
 # конечная обработка аргументов
+
+args.verbose = _verbosity_to_logging_level(args.verbose)
+
 
 if args.production:
     args.enable_notifications = True

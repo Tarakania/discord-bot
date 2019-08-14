@@ -1,5 +1,10 @@
+import logging
+
 from asyncio import subprocess
 from typing import IO, AnyStr, Optional, Any, Tuple
+
+
+log = logging.getLogger(__name__)
 
 
 async def create_subprocess_exec(
@@ -29,6 +34,7 @@ async def create_subprocess_shell(
 async def run_subprocess_exec(
     *args: str, **kwargs: Any
 ) -> Tuple[bytes, bytes]:
+    log.debug(f"Executing subprocess: {args}")
     process = await create_subprocess_exec(*args, **kwargs)
 
     return await process.communicate()
@@ -37,6 +43,7 @@ async def run_subprocess_exec(
 async def run_subprocess_shell(
     program: str, **kwargs: Any
 ) -> Tuple[bytes, bytes]:
+    log.debug(f"Executing subprocess: {program}")
     process = await create_subprocess_shell(program, **kwargs)
 
     return await process.communicate()

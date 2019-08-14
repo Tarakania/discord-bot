@@ -4,6 +4,7 @@ from typing import Any, Dict, Tuple, TYPE_CHECKING
 
 import discord
 
+from . import log
 from player import Player as Player_, UnknownPlayer
 from context import Context
 from parser.exceptions import ConvertError
@@ -41,7 +42,7 @@ class _ConverterMeta(type):
         if argument is not None:
             return argument
 
-        print(
+        log.warning(
             f"Warning: no mathing argument for type {name}. Falling back to String"
         )
 

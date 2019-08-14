@@ -1,5 +1,6 @@
 import hmac
 import asyncio
+import logging
 
 from typing import TYPE_CHECKING
 
@@ -13,6 +14,10 @@ if TYPE_CHECKING:
 
 
 UPDATE_CHANNEL_ID = 605063135526912010
+
+
+log = logging.getLogger(__name__)
+git_log = logging.getLogger(f"{__name__}.git")
 
 
 async def verify_github_request(req: web.Request) -> None:
@@ -45,11 +50,11 @@ async def parse_github_request(req: web.Request) -> None:
 
 
 async def git_pull() -> None:
-    print("[GIT] pull started")
+    git_log.info("Pull started")
 
     await run_subprocess_shell("git pull origin master")
 
-    print("[GIT] pull completed")
+    git_log.info("Pull completed")
 
 
 async def notify_restart_started(
@@ -68,8 +73,10 @@ async def notify_restart_started(
 
     try:
         await update_channel.send(shutdown_message)
-    except Exception:
-        print(f"Failed to deliver notification: {shutdown_message}")
+    except Exception as e:
+        log.warning(
+            f"Failed to deliver notification: {shutdown_message}. Error: {e}"
+        )
 
 
 async def notify_boot_completed(bot: "TarakaniaRPG") -> None:
@@ -85,8 +92,10 @@ async def notify_boot_completed(bot: "TarakaniaRPG") -> None:
 
     try:
         await update_channel.send(boot_message)
-    except Exception:
-        print(f"Failed to deliver notification: {boot_message}")
+    except Exception as e:
+        log.warning(
+            f"Failed to deliver notification: {boot_message}. Error: {e}"
+        )
 
 
 async def wait_clean_exit(app: web.Application) -> None:
@@ -96,14 +105,14 @@ async def wait_clean_exit(app: web.Application) -> None:
     await app.cleanup()
     await app["bot"].logout()
 
-    print("Successfully exited")
+    log.info("Successfully exited")
 
 
 async def update_webhook_endpoint(req: web.Request) -> web.Response:
     await verify_github_request(req)
     await parse_github_request(req)
 
-    print("Update webhook fired")
+    log.debug("Update webhook fired")
 
     asyncio.create_task(wait_clean_exit(req.app))
 
@@ -130,6 +139,6 @@ async def start_updater(bot: "TarakaniaRPG") -> None:
     site = web.TCPSite(runner, bot.args.wh_host, bot.args.wh_port)
     await site.start()
 
-    print(f"Listening for github events on port {bot.args.wh_port}")
+    log.info(f"Listening for github events on port {bot.args.wh_port}")
 
     await notify_boot_completed(bot)

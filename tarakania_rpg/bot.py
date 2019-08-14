@@ -1,11 +1,13 @@
-from typing import Any
+import sys
+import logging
+
+from typing import Any, Dict
 
 import git
 import discord
+import argparse
 
-from cli import args
 from updater import start_updater
-from config import get_bot_config
 from handler import Handler
 from sql import create_pg_connection
 
@@ -17,12 +19,19 @@ TARAKANIA_RPG_ASCII_ART = r""" _____                _               _           
  \/   \__,_|_|  \__,_|_|\_\__,_|_| |_|_|\__,_| \/ \_/\/   \____/
 """
 
+log = logging.getLogger(__name__)
+
 
 class TarakaniaRPG(discord.AutoShardedClient):
-    def __init__(self, **kwargs: Any):
-        self.args = args
+    def __init__(
+        self,
+        cli_args: argparse.Namespace,
+        config: Dict[str, Any],
+        **kwargs: Any,
+    ):
+        self.args = cli_args
 
-        self.config = get_bot_config(args.config_file)
+        self.config = config
         self.prefixes = {self.config["default-prefix"]}
         self.owners = set(self.config["owners"])
 
@@ -39,9 +48,11 @@ class TarakaniaRPG(discord.AutoShardedClient):
             token = self.config["discord-beta-token"]
 
         if not token:
-            raise RuntimeError(
+            log.fatal(
                 f"Discord {'' if self.args.production else 'beta '}token is missing from config"
             )
+
+            sys.exit(1)
 
         super().run(token, *args, **kwargs)
 

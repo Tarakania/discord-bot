@@ -2,8 +2,10 @@ from typing import Any, Union, Optional, TYPE_CHECKING
 
 import discord
 
+
 if TYPE_CHECKING:
     from bot import TarakaniaRPG
+    from command import BaseCommand
 
 
 class Context:
@@ -13,6 +15,7 @@ class Context:
         "author",
         "channel",
         "guild",
+        "command",
         "prefix",
         "alias",
     )
@@ -21,11 +24,13 @@ class Context:
         self,
         bot: "TarakaniaRPG",
         message: discord.Message,
+        command: "BaseCommand",
         prefix: str,
         alias: str,
     ):
         self.bot = bot
         self.message = message
+        self.command = command
         self.prefix = prefix
         self.alias = alias
 
