@@ -4,6 +4,7 @@ import logging
 import traceback
 import importlib
 
+from shlex import split
 from types import ModuleType
 from typing import TYPE_CHECKING, Dict, Optional, Tuple, Set, Pattern
 
@@ -175,7 +176,17 @@ class Handler:
         if used_prefix is None:
             return
 
-        args = Arguments(trimmed_content)
+        try:
+            splitted_content = split(trimmed_content)
+        except ValueError:
+            # TODO: better help message
+            await msg.channel.send(
+                "Ошибка разделения аргументов: открытая ковычка"
+            )
+
+            return
+
+        args = Arguments(splitted_content)
 
         used_alias = args.command
         if used_alias is None:

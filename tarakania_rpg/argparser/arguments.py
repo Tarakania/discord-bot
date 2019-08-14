@@ -1,4 +1,3 @@
-from shlex import split
 from itertools import zip_longest
 from typing import Any, List, Union, Iterator, Optional, overload
 
@@ -12,15 +11,10 @@ from argparser.exceptions import (
 
 
 class Arguments:
-    def __init__(self, content: str):
+    def __init__(self, splitted_content: List[str]):
         # TODO: flags support?
 
-        self._args: List[str]
-
-        try:
-            self._args = split(content)
-        except ValueError:
-            self._args = content.split()
+        self._args = splitted_content
 
         self._converted: List[Any] = []
 
