@@ -1,0 +1,98 @@
+10:
+  name: Дубовая кора
+  type: shield
+  protection: 3
+  ingredients:
+    - 11
+
+
+13:
+  name: Крепкий деревянный щит
+  protection: 5
+  ingredients:
+    - 11
+    - 11
+    - 12
+    - 12
+
+14:
+  name: Кожаный колет
+  protection: 2
+  ingredients:
+    - 12
+    - 12
+    - 12
+    - 12
+
+15:
+  name: Кожаные ботинки
+  protection: 1
+  ingredients:
+    - 12
+    - 12
+    - 12
+
+16:
+  name: Кожаный шлем
+  protection: 1
+  ingredients:
+    - 12
+    - 12
+    - 12
+
+17:
+  name: Кожаные штаны
+  protection: 2
+  ingredients:
+    - 12
+    - 12
+    - 12
+    - 12
+
+18:
+  name: Броня из шкуры
+  protection: 3
+  ingredients:
+    - 9
+    - 9
+    - 9
+    - 9
+
+19:
+  name: Ботинки из шкуры
+  protection: 2
+  ingredients:
+    - 9
+    - 9
+    - 9
+
+20:
+  name: Шлем из шкуры
+  protection: 2
+  ingredients:
+    - 9
+    - 9
+    - 9
+
+21:
+  name: Штаны из шкуры
+  protection: 3
+  ingredients:
+    - 9
+    - 9
+    - 9
+    - 9
+
+# Копье бракониса урон 30 (требование 50 силы)
+
+22:
+  name: Шлем титанов защита +400 воля +200
+
+23:
+  name: Доспех титанов защита +1000 воля +200
+
+24:
+  name: Поножи титанов защита +600 воля +200
+
+25:
+  name: Сабатоны титанов защита +450 воля +600

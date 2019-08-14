@@ -16,29 +16,29 @@ if TYPE_CHECKING:
 
 
 class _ConverterMeta(type):
-    _name_map: Dict[str, type] = {}
+    _converter_name_map: Dict[str, type] = {}
 
     def __new__(
         mcls, name: str, bases: Tuple[type, ...], dct: Dict[str, Any]
     ) -> type:
         cls = super().__new__(mcls, name, bases, dct)
-        if cls.__module__ == mcls.__module__ and name == "ArgumentType":
+        if cls.__module__ == mcls.__module__ and name == "Converter":
             pass
 
-        type_name = dct.get("name")
+        type_name = dct.get("type_name")
         if type_name is not None:
-            existing = mcls._name_map.get(type_name)
+            existing = mcls._converter_name_map.get(type_name)
             if existing is not None:
                 raise TypeError(
                     f"Duplicate name in {type_name}, defined in {existing.__name__}"
                 )
-            mcls._name_map[type_name] = cls
+            mcls._converter_name_map[type_name] = cls
 
         return cls
 
     @classmethod
-    def get_argument_by_name(mcls, name: str) -> type:
-        argument = mcls._name_map.get(name)
+    def _get_converter_by_name(mcls, name: str) -> type:
+        argument = mcls._converter_name_map.get(name)
         if argument is not None:
             return argument
 
@@ -49,14 +49,15 @@ class _ConverterMeta(type):
         return String
 
 
+# TODO: a way to subclass conventer with actual class defining convert function
 class Converter(metaclass=_ConverterMeta):
-    name = ""
+    type_name = ""
 
     @classmethod
     def new(cls, data: Dict[str, Any]) -> Converter:
         type_name = data["type"]
 
-        return type(cls).get_argument_by_name(type_name)(data)
+        return type(cls)._get_converter_by_name(type_name)(data)
 
     def __init__(self, data: Dict[str, Any]):
         self.display_name = data.get("name", data["type"])
@@ -87,32 +88,32 @@ class Converter(metaclass=_ConverterMeta):
         )
 
     def __repr__(self) -> str:
-        return f"<Converter name={self.name} display_name={self.display_name} default_value={self.default_value}>"
+        return f"<Converter name={self.type_name} display_name={self.display_name} default_value={self.default_value}>"
 
 
 class String(Converter):
-    name = "string"
+    type_name = "string"
 
     async def convert(self, ctx: Context, value: str) -> str:
         return value
 
 
 class Number(Converter):
-    name = "number"
+    type_name = "number"
 
     async def convert(self, ctx: Context, value: str) -> float:
         return float(value)
 
 
 class Integer(Converter):
-    name = "integer"
+    type_name = "integer"
 
     async def convert(self, ctx: Context, value: str) -> int:
         return int(value)
 
 
 class Command(Converter):
-    name = "command"
+    type_name = "command"
 
     async def convert(self, ctx: Context, value: str) -> "BaseCommand":
         command = ctx.bot._handler.get_command(value.lower())
@@ -123,7 +124,7 @@ class Command(Converter):
 
 
 class Player(Converter):
-    name = "player"
+    type_name = "player"
 
     async def convert(self, ctx: Context, value: str) -> Player_:
         try:
@@ -133,7 +134,7 @@ class Player(Converter):
 
 
 class User(Converter):
-    name = "user"
+    type_name = "user"
 
     async def convert(self, ctx: Context, value: str) -> discord.User:
         user = None

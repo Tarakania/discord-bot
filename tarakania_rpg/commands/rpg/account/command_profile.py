@@ -1,7 +1,7 @@
 import discord
 
 
-from player import Player, UnknownPlayer
+from rpg.player import Player, UnknownPlayer
 from command import BaseCommand, CommandResult
 from parser.arguments import Arguments
 from context import Context

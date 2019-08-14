@@ -1,7 +1,7 @@
 from rpg.races import races
 from rpg.classes import classes
 
-from player import Player, NickOrIDUsed
+from rpg.player import Player, NickOrIDUsed
 from command import BaseCommand, CommandResult
 from parser.arguments import Arguments
 from context import Context

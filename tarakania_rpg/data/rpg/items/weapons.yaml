@@ -1,0 +1,50 @@
+0:
+  name: Копье
+  damage: 5
+  ingredients:
+    - 7
+    - 8
+    - 8
+
+1:
+  name: Топор
+  damage: 6
+  ingredients:
+    - 8
+    - 8
+    - 8
+    - 7
+2:
+  name: Дубина
+  damage: 4
+  ingredients:
+    - 8
+
+3:
+  name: Крепкая ветка
+  damage: 4
+  ingredients:
+    - 8
+    - 8
+
+4:
+  name: Молот титанов
+  damage:
+    400 # +600 урона против титанов
+
+5:
+  name: Праща
+  damage: 8
+  ingredients:
+    - 26
+    - 8
+  ammo:
+   - камешки
+
+6:
+  name: Камешки
+  craft_amount: 5
+  ingredients:
+    - 7
+
+# Каменный ножик урон 3 (камень и палка)

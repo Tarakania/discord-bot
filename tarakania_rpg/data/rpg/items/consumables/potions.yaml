@@ -1,0 +1,37 @@
+27:
+  name: Зелье маны
+  modifiers:
+    mana: 100
+
+28:
+  name: Зелье здоровья
+  modifiers:
+    health: 50
+
+29:
+  name: Зелье защиты
+  duration: 2
+  modifiers:
+    protection: 5
+
+30:
+  name: Зелье урона
+  duration: 2
+  modifiers:
+    damage: 10
+
+31:
+  name: Зелье сопротивления магии
+  duration: 2
+  modifiers:
+    will: 10
+
+32:
+  name: Зелье магического урона
+  duration: 2
+  modifiers:
+    magic_strength: 15
+
+33:
+  name: Зелье скорости
+  # вы можете атаковать дважды
