@@ -1,0 +1,7 @@
+6:
+  name: Камешки
+  used_with:
+    - 5
+  craft_amount: 5
+  ingredients:
+    - 7

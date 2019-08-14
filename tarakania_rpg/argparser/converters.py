@@ -5,6 +5,7 @@ from typing import Any, Dict, Tuple, TYPE_CHECKING
 import discord
 
 from . import log
+from rpg.items import Item as Item_, all_items, all_items_by_name
 from rpg.player import Player as Player_, UnknownPlayer
 from context import Context
 from argparser.exceptions import ConvertError
@@ -131,6 +132,19 @@ class Player(Converter):
             return await Player_.from_nick(value, ctx.bot.pg)
         except UnknownPlayer:
             raise ConvertError(value, self, "Игрок с таким ником не найден")
+
+
+class Item(Converter):
+    type_name = "item"
+
+    async def convert(self, ctx: Context, value: str) -> Item_:
+        try:
+            if value.isdigit():
+                return all_items[int(value)]
+
+            return all_items_by_name[value.lower().replace("-", " ")]
+        except KeyError:
+            raise ConvertError(value, self, "Предмет не найден")
 
 
 class User(Converter):

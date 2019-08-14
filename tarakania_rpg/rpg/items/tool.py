@@ -2,4 +2,4 @@ from rpg.items import Item
 
 
 class Tool(Item):
-    pass
+    config_filename = "tools.yaml"

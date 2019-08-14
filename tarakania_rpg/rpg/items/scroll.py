@@ -2,4 +2,4 @@ from rpg.items import Item
 
 
 class Scroll(Item):
-    pass
+    config_filename = "scrolls.yaml"

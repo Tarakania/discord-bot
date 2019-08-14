@@ -2,4 +2,4 @@ from rpg.items import Item
 
 
 class AlchemyIngredient(Item):
-    pass
+    config_filename = "alchemy_ingredients.yaml"

@@ -2,4 +2,4 @@ from rpg.items import Item
 
 
 class Book(Item):
-    pass
+    config_filename = "books.yaml"
