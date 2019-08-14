@@ -8,6 +8,7 @@
 
 13:
   name: Крепкий деревянный щит
+  type: shield
   protection: 5
   ingredients:
     - 11
@@ -17,6 +18,7 @@
 
 14:
   name: Кожаный колет
+  type: chestplate
   protection: 2
   ingredients:
     - 12
@@ -26,6 +28,7 @@
 
 15:
   name: Кожаные ботинки
+  type: boots
   protection: 1
   ingredients:
     - 12
@@ -34,6 +37,7 @@
 
 16:
   name: Кожаный шлем
+  type: helmet
   protection: 1
   ingredients:
     - 12
@@ -42,6 +46,7 @@
 
 17:
   name: Кожаные штаны
+  type: leggings
   protection: 2
   ingredients:
     - 12
@@ -51,6 +56,7 @@
 
 18:
   name: Броня из шкуры
+  type: chestplate
   protection: 3
   ingredients:
     - 9
@@ -60,6 +66,7 @@
 
 19:
   name: Ботинки из шкуры
+  type: boots
   protection: 2
   ingredients:
     - 9
@@ -68,6 +75,7 @@
 
 20:
   name: Шлем из шкуры
+  type: helmet
   protection: 2
   ingredients:
     - 9
@@ -76,6 +84,7 @@
 
 21:
   name: Штаны из шкуры
+  type: leggings
   protection: 3
   ingredients:
     - 9
@@ -86,13 +95,25 @@
 # Копье бракониса урон 30 (требование 50 силы)
 
 22:
-  name: Шлем титанов защита +400 воля +200
+  name: Шлем титанов
+  type: helmet
+  protection: 400
+  will: 200
 
 23:
-  name: Доспех титанов защита +1000 воля +200
+  name: Доспех титанов
+  type: chestplate
+  protection: 1000
+  will: 200
 
 24:
-  name: Поножи титанов защита +600 воля +200
+  name: Поножи титанов
+  type: leggings
+  protection: 600
+  will: 200
 
 25:
-  name: Сабатоны титанов защита +450 воля +600
+  name: Сабатоны титанов
+  type: boots
+  protection: 450
+  will: 600
