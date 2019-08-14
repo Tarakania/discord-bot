@@ -119,4 +119,5 @@ def setup_logger(logging_config: Dict[str, Any]) -> None:
 
     logging.config.dictConfig(LOGGING_CONFIG)
 
-    test_logger()
+    if args.test_logger:
+        test_logger()
