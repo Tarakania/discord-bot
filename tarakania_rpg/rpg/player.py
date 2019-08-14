@@ -4,6 +4,7 @@ from typing import List, Dict, Any, Optional
 
 import asyncpg
 
+from rpg.items import Item
 from rpg.races import races
 from rpg.classes import classes
 from rpg.locations import locations
@@ -17,6 +18,96 @@ class NickOrIDUsed(Exception):
 
 class UnknownPlayer(Exception):
     pass
+
+
+class PlayerStats:
+    def __init__(self, equipment: List[Item]):
+        self._items = equipment
+
+        self._health: Optional[int] = None
+        self._mana: Optional[int] = None
+        self._will: Optional[int] = None
+        self._protection: Optional[int] = None
+        self._damage: Optional[int] = None
+        self._strength: Optional[int] = None
+        self._magic_strength: Optional[int] = None
+
+    def _calculate_health(self) -> int:
+        # TODO
+        return 0
+
+    def _calculate_mana(self) -> int:
+        # TODO
+        return 0
+
+    def _calculate_will(self) -> int:
+        # TODO
+        return 0
+
+    def _calculate_protection(self) -> int:
+        # TODO
+        return 0
+
+    def _calculate_damage(self) -> int:
+        # TODO
+        return 0
+
+    def _calculate_strength(self) -> int:
+        # TODO
+        return 0
+
+    def _calculate_magic_strength(self) -> int:
+        # TODO
+        return 0
+
+    @property
+    def health(self) -> int:
+        if self._health is None:
+            self._health = self._calculate_health()
+
+        return self._health
+
+    @property
+    def mana(self) -> int:
+        if self._mana is None:
+            self._mana = self._calculate_mana()
+
+        return self._mana
+
+    @property
+    def will(self) -> int:
+        if self._will is None:
+            self._will = self._calculate_will()
+
+        return self._will
+
+    @property
+    def protection(self) -> int:
+        if self._protection is None:
+            self._protection = self._calculate_protection()
+
+        return self._protection
+
+    @property
+    def damage(self) -> int:
+        if self._damage is None:
+            self._damage = self._calculate_damage()
+
+        return self._damage
+
+    @property
+    def strength(self) -> int:
+        if self._strength is None:
+            self._strength = self._calculate_strength()
+
+        return self._strength
+
+    @property
+    def magic_strength(self) -> int:
+        if self._magic_strength is None:
+            self._magic_strength = self._calculate_magic_strength()
+
+        return self._magic_strength
 
 
 class Player:
@@ -39,7 +130,10 @@ class Player:
         self.location = locations[location]
         self.xp = xp
         self.money = money
-        self.inventory = inventory
+        self.inventory = [Item(i) for i in inventory]
+
+        # TODO: pass equipment instead
+        self.stats = PlayerStats(self.inventory)
 
     @classmethod
     async def create(
