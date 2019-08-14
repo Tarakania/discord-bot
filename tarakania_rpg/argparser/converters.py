@@ -7,7 +7,7 @@ import discord
 from . import log
 from rpg.player import Player as Player_, UnknownPlayer
 from context import Context
-from parser.exceptions import ConvertError
+from argparser.exceptions import ConvertError
 from regexes import USER_MENTION_OR_ID_REGEX
 
 

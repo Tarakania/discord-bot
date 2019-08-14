@@ -5,8 +5,8 @@ import yaml
 import discord
 
 from context import Context
-from parser.converters import Converter
-from parser.arguments import Arguments
+from argparser.converters import Converter
+from argparser.arguments import Arguments
 
 if typing.TYPE_CHECKING:
     from bot import TarakaniaRPG

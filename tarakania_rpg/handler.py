@@ -12,8 +12,8 @@ import discord
 from constants import BASE_DIR
 from command import BaseCommand, CommandResult
 from context import Context
-from parser.arguments import Arguments
-from parser.exceptions import ParserError
+from argparser.arguments import Arguments
+from argparser.exceptions import ParserError
 
 
 if TYPE_CHECKING:

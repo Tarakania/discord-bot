@@ -3,7 +3,7 @@ import discord
 
 from rpg.player import Player, UnknownPlayer
 from command import BaseCommand, CommandResult
-from parser.arguments import Arguments
+from argparser.arguments import Arguments
 from context import Context
 
 
