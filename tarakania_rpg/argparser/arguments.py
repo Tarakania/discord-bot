@@ -1,3 +1,4 @@
+from shlex import split
 from itertools import zip_longest
 from typing import Any, List, Union, Iterator, Optional, overload
 
@@ -12,9 +13,15 @@ from argparser.exceptions import (
 
 class Arguments:
     def __init__(self, content: str):
-        # TODO: better splitter (shlex?)
         # TODO: flags support?
-        self._args: List[str] = content.split()
+
+        self._args: List[str]
+
+        try:
+            self._args = split(content)
+        except ValueError:
+            self._args = content.split()
+
         self._converted: List[Any] = []
 
     async def convert(self, ctx: Context, converters: List[Converter]) -> None:
@@ -45,7 +52,6 @@ class Arguments:
                     raise TooManyArguments
 
                 actual_converters.append(last_converter)
-
             else:
                 actual_converters.append(converter)
 
