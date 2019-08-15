@@ -4,6 +4,9 @@ from rpg.items import Item
 
 
 class Consumable(Item):
+
+    __slots__ = ("modifiers",)
+
     def __init__(self, **kwargs: Any):
         self.modifiers: Dict[str, int] = kwargs.pop("modifiers", {})
 

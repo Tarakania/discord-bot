@@ -25,6 +25,8 @@ class UnknownItem(Exception):
 class Item:
     config_filename = ""
 
+    __slots__ = ("id", "name", "craft_amount", "ingredients")
+
     def __init__(self, **kwargs: Any):
         self.id: int = kwargs.pop("id")
         self.name: str = kwargs.pop("name")

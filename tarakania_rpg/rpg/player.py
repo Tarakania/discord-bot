@@ -109,8 +109,25 @@ class PlayerStats:
 
         return self._magic_strength
 
+    def __repr__(self) -> str:
+        return f"<PlayerStats health={self.health} mana={self.mana}>"
+
 
 class Player:
+
+    __slots__ = (
+        "discord_id",
+        "nick",
+        "race",
+        "class_",
+        "location",
+        "xp",
+        "money",
+        "inventory",
+        "equipment",
+        "stats",
+    )
+
     def __init__(
         self,
         *,
@@ -122,6 +139,7 @@ class Player:
         xp: int,
         money: int,
         inventory: List[int],
+        # equipment: List[int]
     ):
         self.discord_id = discord_id
         self.nick = nick
@@ -131,6 +149,7 @@ class Player:
         self.xp = xp
         self.money = money
         self.inventory = [Item.from_id(i) for i in inventory]
+        # self.equipment = [Item.from_id(i) for i in equipment]
 
         # TODO: pass equipment instead
         self.stats = PlayerStats(self.inventory)
@@ -224,4 +243,4 @@ class Player:
         return self.nick
 
     def __repr__(self) -> str:
-        return f"<Player discord_id={self.discord_id} nick={self.nick}>"
+        return f"<Player discord_id={self.discord_id} nick={self.nick} stats={self.stats}>"

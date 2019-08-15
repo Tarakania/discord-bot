@@ -6,6 +6,8 @@ from rpg.items import Item
 class Armor(Item):
     config_filename = "armor.yaml"
 
+    __slots__ = ("type", "modifiers")
+
     def __init__(self, **kwargs: Any):
         self.type: str = kwargs.pop("type")
         self.modifiers: Dict[str, int] = kwargs.pop("modifiers", {})

@@ -6,6 +6,8 @@ from rpg.items.consumables import Consumable
 class Potion(Consumable):
     config_filename = "consumables/potions.yaml"
 
+    __slots__ = ("duration",)
+
     def __init__(self, **kwargs: Any):
         self.duration: int = kwargs.pop("duration", 0)
 
