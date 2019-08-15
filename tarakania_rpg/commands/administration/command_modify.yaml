@@ -1,0 +1,12 @@
+name: modify
+short_help: Изменяет характеристеки предмета в памяти бота
+owner_only: yes
+
+arguments:
+  - name: предмет
+    type: item
+  - name: атрибут
+    type: string
+  - name: значение
+    type: string
+    optional: yes
