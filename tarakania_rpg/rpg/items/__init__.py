@@ -1,4 +1,9 @@
-from .item import Item, UnknownItem, _drop_items  # noqa: F401
+from .item import (  # noqa: F401
+    Item,
+    UnknownItem,
+    _load_items_from_file,
+    _drop_items,
+)
 
 from .alchemy_ingredient import AlchemyIngredient
 from .ammo import Ammo
@@ -13,25 +18,29 @@ from .consumables.food import Food
 from .consumables.potion import Potion
 
 
-def read_item_configs() -> None:
-    for cls in (
-        AlchemyIngredient,
-        Ammo,
-        Armor,
-        Book,
-        CraftIngredient,
-        Scroll,
-        Tool,
-        Weapon,
-        Food,
-        Potion,
-    ):
-        Item.read_items_from_file(cls)
+_ALL_ITEM_TYPES = (
+    AlchemyIngredient,
+    Ammo,
+    Armor,
+    Book,
+    CraftIngredient,
+    Scroll,
+    Tool,
+    Weapon,
+    Food,
+    Potion,
+)
 
 
-def reload_item_configs() -> None:
-    _drop_items()
-    read_item_configs()
+def load_all_items() -> None:
+    for item_type in _ALL_ITEM_TYPES:
+        _load_items_from_file(item_type)
 
 
-read_item_configs()
+def reload_all_items() -> None:
+    for item_type in _ALL_ITEM_TYPES:
+        _drop_items(item_type)
+        _load_items_from_file(item_type)
+
+
+load_all_items()

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import yaml
 
-from typing import Any, Dict, List, Type
+from typing import Any, Dict, List, Type, Optional
 
 from constants import DATA_DIR
 
@@ -11,11 +11,48 @@ _all_items_by_id: Dict[int, Item] = {}
 _all_items_by_name: Dict[str, Item] = {}
 
 
-def _drop_items() -> None:
+def _drop_items(item_type: Optional[Type[Item]] = None) -> None:
     global _all_items_by_id, _all_items_by_name
 
-    _all_items_by_id = {}
-    _all_items_by_name = {}
+    if item_type is None:
+        _all_items_by_id = {}
+        _all_items_by_name = {}
+
+        return
+
+    for item in _all_items_by_id.values():
+        del _all_items_by_id[item.id]
+        del _all_items_by_name[item.name]
+
+
+def _read_items_from_file(item_type: Type[Item]) -> Dict[int, Any]:
+    with open(f"{DATA_DIR}/rpg/items/{item_type.config_filename}") as f:
+        item_data = yaml.safe_load(f)
+
+    if item_data is None:  # empty config
+        return {}
+
+    for k, v in item_data.items():
+        v["id"] = k
+
+    return item_data
+
+
+def _load_items_from_file(item_type: Type[Item]) -> List[Item]:
+    items_data = _read_items_from_file(item_type)
+
+    created: List[Item] = []
+
+    for id, data in items_data.items():
+        new_item = item_type.from_data(data)
+
+        global _all_items_by_id, _all_items_by_name
+        _all_items_by_id[id] = new_item
+        _all_items_by_name[new_item.name.lower()] = new_item
+
+        created.append(new_item)
+
+    return created
 
 
 class UnknownItem(Exception):
@@ -37,30 +74,8 @@ class Item:
 
         if kwargs:
             raise ValueError(
-                f"Unknown kwarg(s) passed from {self.__class__.__name__}: {kwargs.keys()}"
+                f"Unknown kwarg(s) passed from {self.__class__.__name__}: {tuple(kwargs.keys())}"
             )
-
-    @staticmethod
-    def read_items_from_file(cls: Type[Item]) -> List[Item]:
-        with open(f"{DATA_DIR}/rpg/items/{cls.config_filename}") as f:
-            items = yaml.safe_load(f)
-
-        created: List[Item] = []
-
-        if items is None:  # empty config
-            return created
-
-        for k, v in items.items():
-            v["id"] = k
-            new_item = cls.from_data(v)
-
-            global _all_items_by_id, _all_items_by_name
-            _all_items_by_id[k] = new_item
-            _all_items_by_name[new_item.name.lower()] = new_item
-
-            created.append(new_item)
-
-        return created
 
     @classmethod
     def from_data(cls, data: Dict[str, Any]) -> Item:
