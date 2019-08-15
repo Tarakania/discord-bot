@@ -24,13 +24,16 @@ class Command(BaseCommand):
             "Опыта до следующего уровня": player.xp_to_next_level,
             "Деньги": player.money,
             "Размер инвентаря": len(player.inventory),
-            "Здоровье": player.stats.health,
-            "Мана": player.stats.mana,
             "Воля": player.stats.will,
             "Защита": player.stats.protection,
             "Сила": player.stats.strength,
             "Сила магии": player.stats.magic_strength,
-            "Урон": player.stats.damage,
+            "Интеллект": player.stats.intelligence,
+            "Живучесть": player.stats.vitality,
+            "Ловкость": player.stats.agility,
+            "Здоровье": player.stats.health,
+            "Мана": player.stats.mana,
+            "Очки действия": player.stats.action_points,
         }
 
         e = discord.Embed(
