@@ -1,6 +1,5 @@
 import discord
 
-
 from rpg.player import Player, UnknownPlayer
 from command import BaseCommand, CommandResult
 from argparser.arguments import Arguments
@@ -17,15 +16,26 @@ class Command(BaseCommand):
         else:
             player = args[0]
 
+        info = {
+            "Раса": player.race["name"],
+            "Класс": player.class_["name"],
+            "Локация": player.location["name"],
+            "Уровень": player.level,
+            "Опыта до следующего уровня": player.xp_to_next_level,
+            "Деньги": player.money,
+            "Размер инвентаря": len(player.inventory),
+            "Здоровье": player.stats.health,
+            "Мана": player.stats.mana,
+            "Воля": player.stats.will,
+            "Защита": player.stats.protection,
+            "Сила": player.stats.strength,
+            "Сила магии": player.stats.magic_strength,
+            "Урон": player.stats.damage,
+        }
+
         e = discord.Embed(
             title="Информация о персонаже",
-            description=f"""Раса: **{player.race["name"]}**
-Класс: **{player.class_["name"]}**
-Локация: **{player.location["name"]}**
-Уровень: **{player.level}**
-Опыта до следующего уровня: **{player.xp_to_next_level}**
-Деньги: **{player.money}**
-Размер инвентаря: **{len(player.inventory)}**""",
+            description="\n".join(f"{k}: **{v}**" for k, v in info.items()),
         )
         e.set_author(name=player.nick)
 
