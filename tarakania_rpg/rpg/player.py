@@ -130,7 +130,7 @@ class Player:
         self.location = locations[location]
         self.xp = xp
         self.money = money
-        self.inventory = [Item(i) for i in inventory]
+        self.inventory = [Item.from_id(i) for i in inventory]
 
         # TODO: pass equipment instead
         self.stats = PlayerStats(self.inventory)

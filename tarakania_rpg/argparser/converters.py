@@ -5,7 +5,7 @@ from typing import Any, Dict, Tuple, TYPE_CHECKING
 import discord
 
 from . import log
-from rpg.items import Item as Item_, all_items, all_items_by_name
+from rpg.items import Item as Item_, UnknownItem
 from rpg.player import Player as Player_, UnknownPlayer
 from context import Context
 from argparser.exceptions import ConvertError
@@ -140,10 +140,10 @@ class Item(Converter):
     async def convert(self, ctx: Context, value: str) -> Item_:
         try:
             if value.isdigit():
-                return all_items[int(value)]
+                return Item_.from_id(int(value))
 
-            return all_items_by_name[value.lower().replace("-", " ")]
-        except KeyError:
+            return Item_.from_name(value.lower().replace("-", " "))
+        except UnknownItem:
             raise ConvertError(value, self, "Предмет не найден")
 
 

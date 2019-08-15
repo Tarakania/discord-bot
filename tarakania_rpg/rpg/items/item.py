@@ -7,15 +7,19 @@ from typing import Any, Dict, List, Type
 from constants import DATA_DIR
 
 
-all_items: Dict[int, Item] = {}
-all_items_by_name: Dict[str, Item] = {}
+_all_items_by_id: Dict[int, Item] = {}
+_all_items_by_name: Dict[str, Item] = {}
 
 
 def _drop_items() -> None:
-    global all_items, all_items_by_name
+    global _all_items_by_id, _all_items_by_name
 
-    all_items = {}
-    all_items_by_name = {}
+    _all_items_by_id = {}
+    _all_items_by_name = {}
+
+
+class UnknownItem(Exception):
+    pass
 
 
 class Item:
@@ -48,9 +52,9 @@ class Item:
             v["id"] = k
             new_item = cls.from_data(v)
 
-            global all_items, all_items_by_name
-            all_items[k] = new_item
-            all_items_by_name[new_item.name.lower()] = new_item
+            global _all_items_by_id, _all_items_by_name
+            _all_items_by_id[k] = new_item
+            _all_items_by_name[new_item.name.lower()] = new_item
 
             created.append(new_item)
 
@@ -59,6 +63,20 @@ class Item:
     @classmethod
     def from_data(cls, data: Dict[str, Any]) -> Item:
         return cls(**data)
+
+    @classmethod
+    def from_id(cls, id: int) -> Item:
+        try:
+            return _all_items_by_id[id]
+        except IndexError:
+            raise UnknownItem(f"Item with id {id} not found")
+
+    @classmethod
+    def from_name(cls, name: str) -> Item:
+        try:
+            return _all_items_by_name[name]
+        except IndexError:
+            raise UnknownItem(f"Item with name {name} not found")
 
     def __str__(self) -> str:
         return self.name
