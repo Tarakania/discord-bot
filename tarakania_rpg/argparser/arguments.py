@@ -55,7 +55,7 @@ class Arguments:
             except ConvertError:
                 raise
             except Exception as e:
-                raise ConvertError(value, converter, original_exc=e)
+                raise ConvertError(value, converted) from e
 
             self._converted.append(converted)
 

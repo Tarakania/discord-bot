@@ -1,8 +1,8 @@
-from typing import Any, Optional, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 
 
 if TYPE_CHECKING:
-    from parser.converters import Converter
+    from argparser.converters import Converter
 
 
 class ParserError(Exception):
@@ -21,17 +21,12 @@ class TooFewArguments(ParserError):
 
 class ConvertError(ParserError):
     def __init__(
-        self,
-        value: Any,
-        converter: "Converter",
-        message: str = "",
-        original_exc: Optional[BaseException] = None,
+        self, value: Any, converter: "Converter", message: str = ""
     ) -> None:
         super().__init__(message)
 
         self.value = value
         self.converter = converter
-        self.original_exc = original_exc
         self.message = message
 
     def __str__(self) -> str:
