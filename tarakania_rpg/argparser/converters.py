@@ -23,8 +23,6 @@ class _ConverterMeta(type):
         mcls, name: str, bases: Tuple[type, ...], dct: Dict[str, Any]
     ) -> type:
         cls = super().__new__(mcls, name, bases, dct)
-        if cls.__module__ == mcls.__module__ and name == "Converter":
-            pass
 
         type_name = dct.get("type_name")
         if type_name is not None:
@@ -74,7 +72,7 @@ class Converter(metaclass=_ConverterMeta):
     async def convert(self, ctx: Context, value: str) -> Any:
         raise NotImplementedError
 
-    def __str__(self) -> str:
+    def get_usage(self) -> str:
         extra_markers = ""
         if self.greedy:
             extra_markers += "..."
@@ -87,6 +85,9 @@ class Converter(metaclass=_ConverterMeta):
             if self.optional
             else f"<{self.display_name}{extra_markers}>"
         )
+
+    def __str__(self) -> str:
+        return self.type_name
 
     def __repr__(self) -> str:
         return f"<Converter name={self.type_name} display_name={self.display_name} default_value={self.default_value}>"

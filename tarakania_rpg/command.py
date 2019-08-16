@@ -70,7 +70,7 @@ class BaseCommand:
         else:
             aliases = self.aliases[0]
 
-        arguments = " ".join(str(c) for c in self.arguments)
+        arguments = " ".join(c.get_usage() for c in self.arguments)
 
         return f"{prefix}{aliases} {arguments}"
 
