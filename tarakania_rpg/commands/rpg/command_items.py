@@ -1,4 +1,5 @@
-from rpg.items.item import _all_items_by_id
+from rpg.items import Item
+from rpg.rpg_object import all_instances
 
 from command import BaseCommand, CommandResult
 from argparser.arguments import Arguments
@@ -8,9 +9,9 @@ from utils.formatting import codeblock
 
 class Command(BaseCommand):
     async def run(self, ctx: Context, args: Arguments) -> CommandResult:
-        items = [(id, item) for id, item in _all_items_by_id.items()]
-        items.sort(key=lambda x: x[0])
+        items = [i for i in all_instances(Item)]
+        items.sort(key=lambda x: x.id)
 
         return codeblock(
-            "\n".join(sorted(f"{id:>3} {item.name}" for id, item in items))
+            "\n".join(sorted(f"{item.id:>3} {item.name}" for item in items))
         )

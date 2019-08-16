@@ -4,18 +4,14 @@ from command import BaseCommand, CommandResult
 from argparser.arguments import Arguments
 from context import Context
 
-from rpg.items.item import (
-    _read_items_from_file,
-    _all_items_by_id,
-    _all_items_by_name,
-)
+from rpg.items.item import Item
 
 
 class Command(BaseCommand):
     async def run(self, ctx: Context, args: Arguments) -> CommandResult:
         item = args[0]
 
-        items_data = _read_items_from_file(item.__class__)
+        items_data = Item._read_objects_from_file(item.__class__)
         item_data = items_data.get(item.id)
 
         if item_data is None:
@@ -59,10 +55,10 @@ class Command(BaseCommand):
         new_item = item.from_data(item_data)
 
         # inject new item
-        del _all_items_by_id[item.id]
-        del _all_items_by_name[item.name.lower()]
+        del new_item._all_items_by_id[item.id]
+        del new_item._all_items_by_name[item.name.lower()]
 
-        _all_items_by_id[new_item.id] = new_item
-        _all_items_by_name[new_item.name.lower()] = new_item
+        new_item._all_items_by_id[new_item.id] = new_item
+        new_item._all_items_by_name[new_item.name.lower()] = new_item
 
         return f"Предмет: **{new_item!r}**\nЗначения: **{item_data}**"

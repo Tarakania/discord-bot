@@ -17,9 +17,9 @@ class Command(BaseCommand):
             player = args[0]
 
         info = {
-            "Раса": player.race["name"],
-            "Класс": player.class_["name"],
-            "Локация": player.location["name"],
+            "Раса": player.race.name,
+            "Класс": player.class_.name,
+            "Локация": player.location.name,
             "Уровень": player.level,
             "Опыта до следующего уровня": player.xp_to_next_level,
             "Деньги": player.money,

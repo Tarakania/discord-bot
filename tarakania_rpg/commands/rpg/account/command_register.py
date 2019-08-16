@@ -1,42 +1,33 @@
-from rpg.races import races
-from rpg.classes import classes
-
-from rpg.player import Player, NickOrIDUsed
 from command import BaseCommand, CommandResult
 from argparser.arguments import Arguments
 from context import Context
+
+from rpg.player import Player, NickOrIDUsed
+from rpg.rpg_object import all_instances, UnknownObject
+from rpg.race import Race
+from rpg.class_ import Class
 
 
 class Command(BaseCommand):
     async def run(self, ctx: Context, args: Arguments) -> CommandResult:
         nick = args[0]
-        race = args[1].lower()
-        class_ = args[2].lower()
 
         if not (1 <= len(nick) <= 128):
             return f"Имя персонажа должно быть в пределах от **1** до **128** символов.\nВы ввели **{len(nick)}**"
 
-        is_race_valid = False
-        for race_id, r in races.items():
-            if r["name"].lower() == race:
-                is_race_valid = True
-                break
+        try:
+            race: Race = Race.from_name(args[1])
+        except UnknownObject:
+            return f"Выберите название расы из: **{', '.join(i.name for i in all_instances(Race))}**"
 
-        if not is_race_valid:
-            return f"Выберите название расы из: **{', '.join(i['name'] for i in races.values())}**"
-
-        is_class_valid = False
-        for class_id, c in classes.items():
-            if c["name"].lower() == class_:
-                is_class_valid = True
-                break
-
-        if not is_class_valid:
-            return f"Выберите название класса из: **{', '.join(i['name'] for i in classes.values())}**"
+        try:
+            class_: Class = Class.from_name(args[2])
+        except UnknownObject:
+            return f"Выберите название класса из: **{', '.join(i.name for i in all_instances(Class))}**"
 
         try:
             await Player.create(
-                self.bot.pg, ctx.author.id, nick, race_id, class_id
+                self.bot.pg, ctx.author.id, nick, race.id, class_.id
             )
         except NickOrIDUsed:
             return "Персонаж с таким именем уже существует или у вас уже есть персонаж"

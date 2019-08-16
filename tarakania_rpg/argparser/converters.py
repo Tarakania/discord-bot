@@ -5,7 +5,11 @@ from typing import Any, Dict, Tuple, TYPE_CHECKING
 import discord
 
 from . import log
-from rpg.items import Item as Item_, UnknownItem
+from rpg.rpg_object import UnknownObject
+from rpg.items import Item as Item_
+from rpg.race import Race as Race_
+from rpg.class_ import Class as Class_
+from rpg.location import Location as Location_
 from rpg.player import Player as Player_, UnknownPlayer
 from context import Context
 from argparser.exceptions import ConvertError
@@ -144,8 +148,49 @@ class Item(Converter):
                 return Item_.from_id(int(value))
 
             return Item_.from_name(value.lower().replace("-", " "))
-        except UnknownItem:
-            raise ConvertError(value, self, "Предмет не найден")
+        except UnknownObject:
+            raise ConvertError(
+                value, self, "Такой предмет не существует найден"
+            )
+
+
+class Race(Converter):
+    type_name = "race"
+
+    async def convert(self, ctx: Context, value: str) -> Race_:
+        try:
+            if value.isdigit():
+                return Race_.from_id(int(value))
+
+            return Race_.from_name(value.lower().replace("-", " "))
+        except UnknownObject:
+            raise ConvertError(value, self, "Такой расы не существует")
+
+
+class Class(Converter):
+    type_name = "class"
+
+    async def convert(self, ctx: Context, value: str) -> Class_:
+        try:
+            if value.isdigit():
+                return Class_.from_id(int(value))
+
+            return Class_.from_name(value.lower().replace("-", " "))
+        except UnknownObject:
+            raise ConvertError(value, self, "Такой класс не существует")
+
+
+class Location(Converter):
+    type_name = "location"
+
+    async def convert(self, ctx: Context, value: str) -> Location_:
+        try:
+            if value.isdigit():
+                return Location_.from_id(int(value))
+
+            return Location_.from_name(value.lower().replace("-", " "))
+        except UnknownObject:
+            raise ConvertError(value, self, "Такой локация не существует")
 
 
 class User(Converter):

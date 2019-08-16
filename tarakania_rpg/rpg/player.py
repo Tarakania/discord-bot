@@ -6,9 +6,9 @@ from typing import List, Dict, Any, Optional, Iterator, Union
 import asyncpg
 
 from rpg.items import Item, Equippable, Weapon, Armor
-from rpg.races import races
-from rpg.classes import classes
-from rpg.locations import locations
+from rpg.race import Race
+from rpg.class_ import Class
+from rpg.location import Location
 
 from utils.xp import xp_to_level, level_to_xp
 
@@ -56,7 +56,7 @@ class PlayerInventory:
     __slots__ = ("_items",)
 
     def __init__(self, *, items: List[int]):
-        self._items = list(Item.from_id(i) for i in items)
+        self._items: List[Item] = list(Item.from_id(i) for i in items)
 
     async def from_id(
         cls, discord_id: int, conn: asyncpg.Connection
@@ -185,9 +185,9 @@ class PlayerEquipmnent:
         return cls(**{name: data[name] for name in cls._slots})
 
     @staticmethod
-    def can_equip(item: Union[int, Item], player: Player) -> bool:
+    def can_equip(item: Union[int, Equippable], player: Player) -> bool:
         if isinstance(item, int):
-            item = Item.from_id(item)
+            item = Equippable.from_id(item)
 
         if not isinstance(item, Equippable):
             raise ItemUnequippable
@@ -196,10 +196,10 @@ class PlayerEquipmnent:
         return True
 
     async def equip(
-        self, item: Union[int, Item], player: Player, pool: asyncpg.Pool
-    ) -> Optional[Item]:
+        self, item: Union[int, Equippable], player: Player, pool: asyncpg.Pool
+    ) -> Optional[Equippable]:
         if isinstance(item, int):
-            item = Item.from_id(item)
+            item = Equippable.from_id(item)
 
         if item in self:
             raise ItemAlreadyEquipped
@@ -228,10 +228,10 @@ class PlayerEquipmnent:
         return unequipped
 
     async def unequip(
-        self, item: Union[int, Item], player: Player, pool: asyncpg.Pool
-    ) -> Optional[Item]:
+        self, item: Union[int, Equippable], player: Player, pool: asyncpg.Pool
+    ) -> Optional[Equippable]:
         if isinstance(item, int):
-            item = Item.from_id(item)
+            item = Equippable.from_id(item)
 
         if item not in self:
             raise ItemAlreadyUnequipped
@@ -253,7 +253,7 @@ class PlayerEquipmnent:
 
         return item
 
-    def __iter__(self) -> Iterator[Item]:
+    def __iter__(self) -> Iterator[Equippable]:
         for name in self._slots:
             item = getattr(self, name)
 
@@ -518,9 +518,9 @@ class Player:
     ):
         self.discord_id = discord_id
         self.nick = nick
-        self.race = races[race]
-        self.class_ = classes[class_]
-        self.location = locations[location]
+        self.race: Race = Race.from_id(race)
+        self.class_: Class = Class.from_id(class_)
+        self.location: Location = Location.from_id(location)
         self.xp = xp
         self.money = money
         self.inventory = PlayerInventory(items=inventory)
@@ -648,19 +648,20 @@ class Player:
 
         if item not in self.inventory:
             # prefer removing item from inventory
-            with suppress(ItemAlreadyUnequipped):
-                await self.equipment.unequip(item, self, pool)
+            if isinstance(item, Equippable):
+                with suppress(ItemAlreadyUnequipped):
+                    await self.equipment.unequip(item, self, pool)
 
         return await self.inventory.remove(item, self, pool)
 
-    def can_equip(self, item: Union[int, Item]) -> bool:
+    def can_equip(self, item: Union[int, Equippable]) -> bool:
         return self.equipment.can_equip(item, self)
 
     async def equip_item(
-        self, item: Union[int, Item], pool: asyncpg.Pool
+        self, item: Union[int, Equippable], pool: asyncpg.Pool
     ) -> Item:
         if isinstance(item, int):
-            item = Item.from_id(item)
+            item = Equippable.from_id(item)
 
         if item in self.equipment:
             raise ItemAlreadyEquipped
@@ -674,10 +675,10 @@ class Player:
         return unequipped
 
     async def unequip_item(
-        self, item: Union[int, Item], pool: asyncpg.Pool
+        self, item: Union[int, Equippable], pool: asyncpg.Pool
     ) -> Item:
         if isinstance(item, int):
-            item = Item.from_id(item)
+            item = Equippable.from_id(item)
 
         await self.equipment.unequip(item, self, pool)
         return await self.inventory.add(item, self, pool)
