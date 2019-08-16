@@ -1,9 +1,9 @@
 from typing import Any, Optional
 
-from rpg.items import Item
+from rpg.items import Equippable
 
 
-class Weapon(Item):
+class Weapon(Equippable):
     config_filename = "weapons.yaml"
 
     __slots__ = ("damage", "ammo")
@@ -15,4 +15,4 @@ class Weapon(Item):
         super().__init__(**kwargs)
 
     def __repr__(self) -> str:
-        return f"<{self.__class__.__name__} id={self.id} name={self.name} damage={self.damage} ammo={self.ammo}>"
+        return f"<{self.__class__.__name__} id={self.id} name={self.name} damage={self.damage} ammo={self.ammo} modifiers={self.modifiers}>"

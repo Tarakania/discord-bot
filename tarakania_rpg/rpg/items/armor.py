@@ -1,16 +1,15 @@
-from typing import Any, Dict
+from typing import Any
 
-from rpg.items import Item
+from rpg.items import Equippable
 
 
-class Armor(Item):
+class Armor(Equippable):
     config_filename = "armor.yaml"
 
-    __slots__ = ("type", "modifiers")
+    __slots__ = ("type",)
 
     def __init__(self, **kwargs: Any):
         self.type: str = kwargs.pop("type")
-        self.modifiers: Dict[str, int] = kwargs.pop("modifiers", {})
 
         super().__init__(**kwargs)
 

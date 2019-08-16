@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-from typing import List, Dict, Any, Optional
+from contextlib import suppress
+from typing import List, Dict, Any, Optional, Iterator, Union
 
 import asyncpg
 
-from rpg.items import Item
+from rpg.items import Item, Equippable, Weapon, Armor
 from rpg.races import races
 from rpg.classes import classes
 from rpg.locations import locations
@@ -13,12 +14,33 @@ from utils.xp import xp_to_level, level_to_xp
 
 
 BASE_STAT_VALUE = 10
+BASE_ACTION_PONTS_VALUE = 4
 
 LEVEL_TO_STAT_RATIO = 15
 
 VITALITY_TO_HEALTH_RATIO = 20
 INTELLIGENCE_TO_MANA_RATIO = 20
 AGILITY_TO_ACTION_POINTS_RATIO = 0.1
+
+
+class ItemNotFound(Exception):
+    pass
+
+
+class ItemAlreadyEquipped(Exception):
+    pass
+
+
+class ItemAlreadyUnequipped(Exception):
+    pass
+
+
+class ItemUnequippable(Exception):
+    pass
+
+
+class UnableToEquip(Exception):
+    pass
 
 
 class NickOrIDUsed(Exception):
@@ -29,8 +51,236 @@ class UnknownPlayer(Exception):
     pass
 
 
+class PlayerInventory:
+
+    __slots__ = ("_items",)
+
+    def __init__(self, *, items: List[int]):
+        self._items = list(Item.from_id(i) for i in items)
+
+    async def from_id(
+        cls, discord_id: int, conn: asyncpg.Connection
+    ) -> PlayerInventory:
+        data = await conn.fetchrow(
+            "SELECT inventory FROM players WHERE discord_id = $1", discord_id
+        )
+
+        if data is None:
+            raise UnknownPlayer
+
+        return cls.from_data(data)
+
+    @classmethod
+    def from_data(cls, data: List[int]) -> PlayerInventory:
+        return cls(items=data)
+
+    @property
+    def size(self) -> int:
+        return len(self._items)
+
+    async def add(
+        self, item: Union[int, Item], player: Player, pool: asyncpg.Pool
+    ) -> Item:
+        if isinstance(item, int):
+            item = Item.from_id(item)
+
+        self._items.append(item)
+
+        await pool.fetch(
+            "UPDATE players SET inventory = $1 WHERE discord_id = $2",
+            [i.id for i in self._items],
+            player.discord_id,
+        )
+
+        return item
+
+    async def remove(
+        self, item: Union[int, Item], player: Player, pool: asyncpg.Pool
+    ) -> Item:
+        if isinstance(item, int):
+            item = Item.from_id(item)
+
+        if item not in self:
+            raise ItemNotFound
+
+        self._items.remove(item)
+
+        await pool.fetch(
+            "UPDATE players SET inventory = $1 WHERE discord_id = $2",
+            [i.id for i in self._items],
+            player.discord_id,
+        )
+
+        return item
+
+    def __iter__(self) -> Iterator[Item]:
+        yield from self._items
+
+
+class PlayerEquipmnent:
+
+    # _slots is used to reduce retyping of variables
+    _slots = ("weapon", "helmet", "chestplate", "leggings", "boots", "shield")
+
+    __slots__ = _slots
+
+    def __init__(self, **kwargs: Optional[int]):
+        # mypy help
+        self.weapon: Weapon
+        self.helmet: Armor
+        self.chestplate: Armor
+        self.leggings: Armor
+        self.boots: Armor
+        self.shield: Armor
+
+        type_map = {
+            "weapon": Weapon,
+            "helmet": Armor,
+            "chestplate": Armor,
+            "leggings": Armor,
+            "boots": Armor,
+            "shield": Armor,
+        }
+
+        checked_kwargs = {}
+        for name in self._slots:
+            instance: Optional[Union[int, Item]] = kwargs.pop(name, None)
+
+            if isinstance(instance, int):
+                instance = Item.from_id(instance)
+
+            # make sure include default None values
+            checked_kwargs[name] = instance
+
+            if instance is None:
+                continue
+
+            cls = type_map[name]
+
+            if not isinstance(instance, cls):
+                raise TypeError(f"{instance} is not an instance of {cls}")
+
+        if kwargs:
+            raise ValueError(
+                f"Unknown argument(s) passed: {tuple(kwargs.keys())}"
+            )
+
+        for name, instance in checked_kwargs.items():
+            setattr(self, name, instance)
+
+    async def from_id(
+        cls, discord_id: int, pool: asyncpg.Pool
+    ) -> PlayerEquipmnent:
+        data = await pool.fetchrow(
+            "SELECT * FROM equipment WHERE discord_id = $1", discord_id
+        )
+
+        if data is None:
+            raise UnknownPlayer
+
+        return cls.from_data(data)
+
+    @classmethod
+    def from_data(cls, data: Dict[str, Any]) -> PlayerEquipmnent:
+        return cls(**{name: data[name] for name in cls._slots})
+
+    @staticmethod
+    def can_equip(item: Union[int, Item], player: Player) -> bool:
+        if isinstance(item, int):
+            item = Item.from_id(item)
+
+        if not isinstance(item, Equippable):
+            raise ItemUnequippable
+
+        # TODO: level checks
+        return True
+
+    async def equip(
+        self, item: Union[int, Item], player: Player, pool: asyncpg.Pool
+    ) -> Optional[Item]:
+        if isinstance(item, int):
+            item = Item.from_id(item)
+
+        if item in self:
+            raise ItemAlreadyEquipped
+
+        if not player.can_equip(item):
+            raise UnableToEquip
+
+        if isinstance(item, Weapon):
+            unequipped = self.weapon
+            slot_name = "weapon"
+
+        elif isinstance(item, Armor):
+            unequipped = getattr(self, item.type)
+            slot_name = item.type
+        else:
+            raise TypeError(f"Unable to equip {item!r}")
+
+        # f-string is safe here because slot_name is checked against _slots in
+        # all scenarios
+        await pool.fetch(
+            f"UPDATE equipment SET {slot_name} = $1 WHERE discord_id = $2",
+            item.id,
+            player.discord_id,
+        )
+
+        return unequipped
+
+    async def unequip(
+        self, item: Union[int, Item], player: Player, pool: asyncpg.Pool
+    ) -> Optional[Item]:
+        if isinstance(item, int):
+            item = Item.from_id(item)
+
+        if item not in self:
+            raise ItemAlreadyUnequipped
+
+        if isinstance(item, Weapon):
+            slot_name = "weapon"
+        elif isinstance(item, Armor):
+            slot_name = item.type
+        else:
+            raise TypeError(f"Unable to unequip {item!r}")
+
+        # f-string is safe here because slot_name is checked against _slots in
+        # all scenarios
+        await pool.fetch(
+            f"UPDATE equipment SET {slot_name} = $1 WHERE discord_id = $2",
+            None,
+            player.discord_id,
+        )
+
+        return item
+
+    def __iter__(self) -> Iterator[Item]:
+        for name in self._slots:
+            item = getattr(self, name)
+
+            if item is not None:
+                yield item
+
+
 class PlayerStats:
-    def __init__(self, equipment: List[Item], level: int):
+
+    __slots__ = (
+        "_player_equipment",
+        "_player_level",
+        "_will",
+        "_agility",
+        "_strength",
+        "_vitality",
+        "_protection",
+        "_intelligence",
+        "_magic_strength",
+        "_mana",
+        "_health",
+        "_action_points",
+        "_modifiers",
+        "_modifiers_calculated",
+    )
+
+    def __init__(self, equipment: PlayerEquipmnent, level: int):
         self._player_equipment = equipment
         self._player_level = level
 
@@ -73,7 +323,7 @@ class PlayerStats:
                 continue
 
             for k, v in modifiers.items():
-                self._modifiers[k] = self._modifiers[k] + v
+                self._modifiers[k] += v
 
         self._modifiers_calculated = True
 
@@ -159,7 +409,7 @@ class PlayerStats:
     def _calculate_action_points(self) -> int:
         self._calculate_modifiers()
 
-        return (
+        return BASE_ACTION_PONTS_VALUE + (
             int(self.agility * AGILITY_TO_ACTION_POINTS_RATIO)
             + self._modifiers["action_points"]
         )
@@ -264,7 +514,7 @@ class Player:
         xp: int,
         money: int,
         inventory: List[int],
-        # equipment: List[int]
+        equipment: PlayerEquipmnent,
     ):
         self.discord_id = discord_id
         self.nick = nick
@@ -273,16 +523,16 @@ class Player:
         self.location = locations[location]
         self.xp = xp
         self.money = money
-        self.inventory = [Item.from_id(i) for i in inventory]
-        # self.equipment = [Item.from_id(i) for i in equipment]
+        self.inventory = PlayerInventory(items=inventory)
+        self.equipment = equipment
 
         # TODO: pass equipment instead
-        self.stats = PlayerStats(self.inventory, self.level)
+        self.stats = PlayerStats(self.equipment, self.level)
 
     @classmethod
     async def create(
         cls,
-        conn: asyncpg.Connection,
+        pool: asyncpg.Pool,
         discord_id: int,
         nick: str,
         race_id: int,
@@ -293,67 +543,89 @@ class Player:
         if location_id is None:
             location_id = race_id
 
-        try:
-            data = await conn.fetchrow(
-                (
-                    "INSERT INTO players (discord_id, nick, race, class, location)"
-                    "VALUES ($1, $2, $3, $4, $5) RETURNING *"
-                ),
-                discord_id,
-                nick,
-                race_id,
-                class_id,
-                location_id,
-            )
-        except asyncpg.UniqueViolationError:  # TODO: parse e.detail to get problematic key or check beforehand
-            raise NickOrIDUsed
+        async with pool.acquire() as conn:
+            async with conn.transaction():
+                try:
+                    player_data = await conn.fetchrow(
+                        (
+                            "INSERT INTO players (discord_id, nick, race, class, location)"
+                            "VALUES ($1, $2, $3, $4, $5) RETURNING *"
+                        ),
+                        discord_id,
+                        nick,
+                        race_id,
+                        class_id,
+                        location_id,
+                    )
+                except asyncpg.UniqueViolationError:
+                    # TODO: parse e.detail to get problematic key or check beforehand
+                    raise NickOrIDUsed
 
-        return cls.from_data(data)
+                equipment_data = await conn.fetchrow(
+                    "INSERT INTO equipment (discord_id) VALUES ($1) RETURNING *",
+                    discord_id,
+                )
+
+        return cls.from_data(player_data, equipment_data)
 
     async def delete(self, conn: asyncpg.Connection) -> None:
-        data = await conn.fetch(
-            "DELETE FROM players WHERE discord_id = $1 RETURNING *",
+        deleted = await conn.fetchrow(
+            "DELETE FROM players WHERE discord_id = $1 RETURNING true",
             self.discord_id,
         )
 
-        if data is None:
+        if not deleted:
             raise UnknownPlayer
 
     @classmethod
     async def from_id(
         cls, discord_id: int, conn: asyncpg.Connection
     ) -> Player:
-        data = await conn.fetchrow(
+        player_data = await conn.fetchrow(
             "SELECT * FROM players WHERE discord_id = $1", discord_id
         )
 
-        if data is None:
+        if player_data is None:
             raise UnknownPlayer
 
-        return cls.from_data(data)
+        equipment_data = await conn.fetchrow(
+            "SELECT * FROM equipment WHERE discord_id = $1", discord_id
+        )
+
+        return cls.from_data(player_data, equipment_data)
 
     @classmethod
     async def from_nick(cls, nick: str, conn: asyncpg.Connection) -> Player:
-        data = await conn.fetchrow(
+        player_data = await conn.fetchrow(
             "SELECT * FROM players WHERE nick = $1", nick
         )
 
-        if data is None:
+        if player_data is None:
             raise UnknownPlayer
 
-        return cls.from_data(data)
+        equipment_data = await conn.fetchrow(
+            "SELECT * FROM equipment WHERE discord_id = $1",
+            player_data["discord_id"],
+        )
+
+        return cls.from_data(player_data, equipment_data)
 
     @classmethod
-    def from_data(cls, data: Dict[str, Any]) -> Player:
+    def from_data(
+        cls, player_data: Dict[str, Any], equipment_data: Dict[str, Any]
+    ) -> Player:
+        equipment = PlayerEquipmnent.from_data(equipment_data)
+
         return cls(
-            discord_id=data["discord_id"],
-            nick=data["nick"],
-            race=data["race"],
-            class_=data["class"],
-            location=data["location"],
-            xp=data["xp"],
-            money=data["money"],
-            inventory=data["inventory"],
+            discord_id=player_data["discord_id"],
+            nick=player_data["nick"],
+            race=player_data["race"],
+            class_=player_data["class"],
+            location=player_data["location"],
+            xp=player_data["xp"],
+            money=player_data["money"],
+            inventory=player_data["inventory"],
+            equipment=equipment,
         )
 
     @property
@@ -363,6 +635,52 @@ class Player:
     @property
     def xp_to_next_level(self) -> int:
         return level_to_xp(self.level + 1) - self.xp
+
+    async def add_item(self, item: Item, pool: asyncpg.Pool) -> Item:
+        if isinstance(item, int):
+            item = Item.from_id(item)
+
+        return await self.inventory.add(item, self, pool)
+
+    async def remove_item(self, item: Item, pool: asyncpg.Pool) -> Item:
+        if isinstance(item, int):
+            item = Item.from_id(item)
+
+        if item not in self.inventory:
+            # prefer removing item from inventory
+            with suppress(ItemAlreadyUnequipped):
+                await self.equipment.unequip(item, self, pool)
+
+        return await self.inventory.remove(item, self, pool)
+
+    def can_equip(self, item: Union[int, Item]) -> bool:
+        return self.equipment.can_equip(item, self)
+
+    async def equip_item(
+        self, item: Union[int, Item], pool: asyncpg.Pool
+    ) -> Item:
+        if isinstance(item, int):
+            item = Item.from_id(item)
+
+        if item in self.equipment:
+            raise ItemAlreadyEquipped
+
+        if not self.can_equip(item):
+            raise UnableToEquip
+
+        unequipped = await self.inventory.remove(item, self, pool)
+        await self.equipment.equip(item, self, pool)
+
+        return unequipped
+
+    async def unequip_item(
+        self, item: Union[int, Item], pool: asyncpg.Pool
+    ) -> Item:
+        if isinstance(item, int):
+            item = Item.from_id(item)
+
+        await self.equipment.unequip(item, self, pool)
+        return await self.inventory.add(item, self, pool)
 
     def __str__(self) -> str:
         return self.nick

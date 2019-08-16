@@ -4,6 +4,7 @@ from .item import (  # noqa: F401
     _load_items_from_file,
     _drop_items,
 )
+from .equippable import Equippable  # noqa: F401
 
 from .alchemy_ingredient import AlchemyIngredient
 from .ammo import Ammo
@@ -16,7 +17,6 @@ from .weapon import Weapon
 
 from .consumables.food import Food
 from .consumables.potion import Potion
-
 
 _ALL_ITEM_TYPES = (
     AlchemyIngredient,

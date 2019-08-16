@@ -85,18 +85,30 @@ class Item:
     def from_id(cls, id: int) -> Item:
         try:
             return _all_items_by_id[id]
-        except IndexError:
+        except KeyError:
             raise UnknownItem(f"Item with id {id} not found")
 
     @classmethod
     def from_name(cls, name: str) -> Item:
         try:
             return _all_items_by_name[name]
-        except IndexError:
+        except KeyError:
             raise UnknownItem(f"Item with name {name} not found")
 
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Item):
+            raise NotImplementedError
+
+        return self.id == other.id
+
+    def __ne__(self, other: object) -> bool:
+        if not isinstance(other, Item):
+            raise NotImplementedError
+
+        return self.id != other.id
+
     def __str__(self) -> str:
-        return self.name
+        return f"{self.name}[{self.id}]"
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} id={self.id} name={self.name}>"

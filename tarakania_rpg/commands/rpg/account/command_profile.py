@@ -23,7 +23,7 @@ class Command(BaseCommand):
             "Уровень": player.level,
             "Опыта до следующего уровня": player.xp_to_next_level,
             "Деньги": player.money,
-            "Размер инвентаря": len(player.inventory),
+            "Размер инвентаря": player.inventory.size,
             "Воля": player.stats.will,
             "Защита": player.stats.protection,
             "Сила": player.stats.strength,
