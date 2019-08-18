@@ -21,6 +21,10 @@ if TYPE_CHECKING:
 
 COMMANDS_DIR = os.sep.join((BASE_DIR, "commands"))
 
+PREFIX_REGEX = (
+    r"^(?P<prefix>({prefixes}))\s*(?P<command>\w+)(?:\s+(?P<arguments>.+))?$"
+)
+
 
 class CommandCheckError(Exception):
     pass
@@ -40,10 +44,9 @@ class Handler:
         name = command_path.rsplit(os.sep, 1)[1][8:-3]
         module_path = command_path.replace(os.sep, ".")[:-3]
 
+        log.info(f"Loading {name}")
         try:
-            log.info(f"Loading {name}")
             imported = importlib.import_module(module_path)
-            log.debug(f"Creating instance of {name}")
             command = getattr(imported, "Command")(self.bot)
         except Exception:
             log.exception(f"Error loading {name}")
@@ -69,10 +72,9 @@ class Handler:
 
         old_aliases = self._commands[name].aliases
 
+        log.info(f"Reloading {name}")
         try:
-            log.info(f"Reloading {name}")
             reloaded = importlib.reload(imported)
-            log.debug(f"Creating instance of {name}")
             command = getattr(reloaded, "Command")(self.bot)
         except Exception:
             log.exception(f"Error reloading {name}")
@@ -119,10 +121,12 @@ class Handler:
         )
 
         self._prefixes_regex = re.compile(
-            fr"^({'|'.join(prefixes)})\s*", re.IGNORECASE
+            PREFIX_REGEX.format(prefixes="|".join(prefixes)),
+            re.IGNORECASE | re.UNICODE,
         )
         self._dm_prefixes_regex = re.compile(
-            fr"^({'|'.join(prefixes+('',))})\s*", re.IGNORECASE
+            PREFIX_REGEX.format(prefixes="|".join(prefixes + ("",))),
+            re.IGNORECASE | re.UNICODE,
         )
 
         await self.prepare_custom_prefixes()
@@ -136,15 +140,21 @@ class Handler:
 
     def separate_prefix(
         self, content: str, guild_id: Optional[int]
-    ) -> Tuple[Optional[str], str]:
+    ) -> Tuple[Optional[str], Optional[str], str]:
+        """Split content into prefix, command, arguments."""
+
         def regex_match(
             expr: Pattern[str], content: str
-        ) -> Tuple[Optional[str], str]:
+        ) -> Tuple[Optional[str], Optional[str], str]:
             match = expr.search(content)
             if match is None:
-                return None, content
+                return None, None, content
 
-            return match[1], content[match.end(0) :]
+            return (
+                match.group("prefix"),
+                match.group("command"),
+                match.group("arguments") or "",
+            )
 
         if guild_id is None:
             return regex_match(self._dm_prefixes_regex, content)
@@ -155,25 +165,38 @@ class Handler:
 
         lower_content = content.lower()
         if lower_content.startswith(custom_prefix):
-            return (custom_prefix, content[len(custom_prefix) :].rstrip())
+            command_and_arguments = content[len(custom_prefix) :].split(
+                maxsplit=1
+            )
+            return (
+                custom_prefix,
+                command_and_arguments[0],
+                command_and_arguments[1]
+                if len(command_and_arguments) == 2
+                else "",
+            )
 
-        return None, content
+        return None, None, content
 
     async def process_message(self, msg: discord.Message) -> None:
-        await self.bot.wait_until_ready()
+        if not self._commands:
+            return
 
         if msg.author.bot:
             return
 
-        used_prefix, trimmed_content = self.separate_prefix(
+        used_prefix, used_alias, arguments = self.separate_prefix(
             msg.content, msg.guild.id if msg.guild else None
         )
+        if used_prefix is None or used_alias is None:
+            return
 
-        if used_prefix is None:
+        command = self._commands.get(used_alias)
+        if command is None:
             return
 
         try:
-            splitted_content = split(trimmed_content)
+            splitted_args = split(arguments)
         except ValueError:
             # TODO: better help message
             await msg.channel.send(
@@ -182,16 +205,7 @@ class Handler:
 
             return
 
-        args = Arguments(splitted_content)
-
-        used_alias = args.command
-        if used_alias is None:
-            return
-
-        command = self._commands.get(used_alias)
-        if command is None:
-            return
-
+        args = Arguments(splitted_args)
         ctx = Context(self.bot, msg, command, used_prefix, used_alias)
 
         try:

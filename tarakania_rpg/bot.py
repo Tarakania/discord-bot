@@ -61,8 +61,8 @@ class TarakaniaRPG(discord.AutoShardedClient):
 
         self.pg = await create_pg_connection(self.config["postgresql"])
 
-        await self._handler.load_all_commands()
         await self._handler.prepare_prefixes()
+        await self._handler.load_all_commands()
 
         print(
             f"Running in {'production' if self.args.production else 'debug'} mode"

@@ -1,5 +1,5 @@
 from itertools import zip_longest
-from typing import Any, List, Union, Iterator, Optional, overload
+from typing import Any, List, Union, Iterator, overload
 
 from .context import Context
 from .converters import Converter
@@ -7,10 +7,10 @@ from .exceptions import TooFewArguments, TooManyArguments, ConvertError
 
 
 class Arguments:
-    def __init__(self, splitted_content: List[str]):
+    def __init__(self, args: List[str]):
         # TODO: flags support?
 
-        self._args = splitted_content
+        self._args = args
 
         self._converted: List[Any] = []
 
@@ -19,7 +19,7 @@ class Arguments:
         actual_converters: List[Converter] = []
 
         for i, (value, converter) in enumerate(
-            zip_longest(self._args[1:], converters)
+            zip_longest(self._args, converters)
         ):
             if value is None:  # arguments exausted
                 if not converter.optional:
@@ -55,18 +55,11 @@ class Arguments:
 
             self._converted.append(converted)
 
-    @property
-    def command(self) -> Optional[str]:
-        return self._args[0].lower() if len(self._args) else None
-
     def __len__(self) -> int:
-        return len(self._args) - 1
+        return len(self._args)
 
     def __bool__(self) -> bool:
-        return len(self._args) > 1
-
-    def __repr__(self) -> str:
-        return f"<Arguments command={self.command}>"
+        return len(self._args) > 0
 
     @overload
     def __getitem__(self, value: int) -> Any:
@@ -79,7 +72,7 @@ class Arguments:
     def __getitem__(  # noqa: F811
         self, index: Union[int, slice]
     ) -> Union[Any, List[Any]]:
-        if len(self._args) - len(self._converted) != 1:
+        if len(self._args) != len(self._converted):
             raise RuntimeError(
                 "Bad number of converted values. Was 'convert' called?"
             )
