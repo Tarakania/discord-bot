@@ -65,11 +65,11 @@ async def notify_restart_started(
 
     update_channel = bot.get_channel(UPDATE_CHANNEL_ID)
 
-    message_base = "\N{INFORMATION SOURCE} Restarting bot to apply "
+    message_base = "\N{INFORMATION SOURCE} Перезагрузка бота для применения "
     if commits_count == -1:
-        shutdown_message = message_base + "updates"
+        shutdown_message = message_base + "обновлений"
     else:
-        shutdown_message = message_base + f"**{commits_count}** commits"
+        shutdown_message = message_base + f"**{commits_count}** коммитов"
 
     try:
         await update_channel.send(shutdown_message)
@@ -85,10 +85,10 @@ async def notify_boot_completed(bot: "TarakaniaRPG") -> None:
 
     update_channel = bot.get_channel(UPDATE_CHANNEL_ID)
 
-    boot_message = "\N{INFORMATION SOURCE} Bot successfully logged in."
+    boot_message = "\N{INFORMATION SOURCE} Бот успешно авторизировался"
 
     if not bot.args.production:
-        boot_message += "\n\N{WARNING SIGN} Working in debug mode."
+        boot_message += "\n\N{WARNING SIGN} Работаю в режиме отладки"
 
     try:
         await update_channel.send(boot_message)
