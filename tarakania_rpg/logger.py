@@ -92,12 +92,12 @@ def setup_logger(logging_config: Dict[str, Any]) -> None:
                 "propagate": False,
             },
             "discord": {
-                "level": "WARNING",
+                "level": "ERROR",
                 "handlers": ["console", "file"],
                 "propagate": False,
             },
             "websockets": {
-                "level": "WARNING",
+                "level": "ERROR",
                 "handlers": ["console", "file"],
                 "propagate": False,
             },
