@@ -2,7 +2,7 @@ from typing import Any, TYPE_CHECKING
 
 
 if TYPE_CHECKING:
-    from argparser.converters import Converter
+    from .converters import Converter
 
 
 class ParserError(Exception):

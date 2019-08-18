@@ -16,8 +16,9 @@ def load_locations() -> None:
     Location._load_objects_from_file(Location)
 
 
-load_races()
-load_classes()
-load_locations()
+def load_objects() -> None:
+    load_races()
+    load_classes()
+    load_locations()
 
-load_all_items()
+    load_all_items()

@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+from logging import getLogger
 from typing import Any, Dict, List, Type, Iterator, TypeVar, Tuple
 
 from yaml import safe_load
 
 from constants import DATA_DIR
 
+
+log = getLogger("object_loader")
 
 TRPGObject = TypeVar("TRPGObject", bound="RPGObject")
 
@@ -73,6 +76,8 @@ class RPGObject(metaclass=_RPGOBjectMeta):
 
     @staticmethod
     def _load_objects_from_file(cls: Type[TRPGObject]) -> List[TRPGObject]:
+        log.debug(f"Loading {cls.__name__} objects")
+
         all_data = cls._read_objects_from_file(cls)
 
         created = []
@@ -86,6 +91,8 @@ class RPGObject(metaclass=_RPGOBjectMeta):
 
     @staticmethod
     def _drop_objects(cls: Type[RPGObject]) -> None:
+        log.debug(f"Dropping {cls.__name__} objects")
+
         cls._storage_by_id = {}
         cls._storage_by_name = {}
 
@@ -103,6 +110,14 @@ class RPGObject(metaclass=_RPGOBjectMeta):
                 return instance
 
         raise UnknownObject
+
+    @classmethod
+    def all_instances(cls) -> Iterator[RPGObject]:
+        if not cls._subclasses:
+            yield from cls._storage_by_id.values()
+
+        for subclass in cls._subclasses:
+            yield from cls._storage_by_id.values()
 
     @classmethod
     def from_name(cls, name: str) -> TRPGObject:
@@ -124,7 +139,3 @@ class RPGObject(metaclass=_RPGOBjectMeta):
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} id={self.id} name={self.name}>"
-
-
-def all_instances(cls: Type[TRPGObject]) -> Iterator[TRPGObject]:
-    yield from cls._storage_by_id.values()

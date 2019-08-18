@@ -5,7 +5,7 @@ import discord
 
 if TYPE_CHECKING:
     from bot import TarakaniaRPG
-    from command import BaseCommand
+    from .command import BaseCommand
 
 
 class Context:

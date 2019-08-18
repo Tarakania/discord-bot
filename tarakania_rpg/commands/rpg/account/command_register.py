@@ -1,7 +1,7 @@
 from handler import BaseCommand, Context, Arguments, CommandResult
 
 from rpg.player import Player, NickOrIDUsed
-from rpg.rpg_object import all_instances, UnknownObject
+from rpg.rpg_object import UnknownObject
 from rpg.race import Race
 from rpg.class_ import Class
 
@@ -16,12 +16,12 @@ class Command(BaseCommand):
         try:
             race: Race = Race.from_name(args[1])
         except UnknownObject:
-            return f"Выберите название расы из: **{', '.join(i.name for i in all_instances(Race))}**"
+            return f"Выберите название расы из: **{', '.join(i.name for i in Race.all_instances())}**"
 
         try:
             class_: Class = Class.from_name(args[2])
         except UnknownObject:
-            return f"Выберите название класса из: **{', '.join(i.name for i in all_instances(Class))}**"
+            return f"Выберите название класса из: **{', '.join(i.name for i in Class.all_instances())}**"
 
         try:
             await Player.create(
