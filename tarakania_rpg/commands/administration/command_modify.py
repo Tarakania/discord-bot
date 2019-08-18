@@ -55,10 +55,10 @@ class Command(BaseCommand):
         new_item = item.from_data(item_data)
 
         # inject new item
-        del new_item._all_items_by_id[item.id]
-        del new_item._all_items_by_name[item.name.lower()]
+        del new_item._storage_by_id[item.id]
+        del new_item._storage_by_name[item.name.lower()]
 
-        new_item._all_items_by_id[new_item.id] = new_item
-        new_item._all_items_by_name[new_item.name.lower()] = new_item
+        new_item._storage_by_id[new_item.id] = new_item
+        new_item._storage_by_name[new_item.name.lower()] = new_item
 
         return f"Предмет: **{new_item!r}**\nЗначения: **{item_data}**"
