@@ -12,6 +12,8 @@ log = getLogger("object_loader")
 
 TRPGObject = TypeVar("TRPGObject", bound="RPGObject")
 
+_subclasses: Dict[type, List[Type[RPGObject]]] = {}
+
 
 class UnknownObject(Exception):
     pass
@@ -27,7 +29,10 @@ class _RPGOBjectMeta(type):
         setattr(cls, "_storage_by_name", {})
 
         for base in bases:
-            base._subclasses.append(cls)  # type: ignore
+            if base not in _subclasses:
+                _subclasses[base] = []
+
+            _subclasses[base].append(cls)
 
         return cls
 
@@ -36,13 +41,13 @@ class RPGObject(metaclass=_RPGOBjectMeta):
     config_filename = ""
     config_folder = ""
 
-    _subclasses: List[RPGObject] = []
-
     __slots__ = ("id", "name", "_storage_by_id", "_storage_by_name")
 
     def __init__(self, **kwargs: Any):
         self._storage_by_id: Dict[int, TRPGObject]  # type: ignore
         self._storage_by_name: Dict[str, TRPGObject]  # type: ignore
+
+        self._subclasses: List[RPGObject]
 
         self.id: int = kwargs.pop("id")
         self.name: str = kwargs.pop("name")
@@ -98,13 +103,14 @@ class RPGObject(metaclass=_RPGOBjectMeta):
 
     @classmethod
     def from_id(cls, id: int) -> TRPGObject:
-        if not cls._subclasses:
+        subclasses = _subclasses.get(cls)
+        if subclasses is None:
             try:
                 return cls._storage_by_id[id]
             except KeyError:
                 raise UnknownObject
 
-        for subclass in cls._subclasses:
+        for subclass in subclasses:
             instance = subclass._storage_by_id.get(id)
             if instance is not None:
                 return instance
@@ -112,27 +118,31 @@ class RPGObject(metaclass=_RPGOBjectMeta):
         raise UnknownObject
 
     @classmethod
-    def all_instances(cls) -> Iterator[RPGObject]:
-        if not cls._subclasses:
-            yield from cls._storage_by_id.values()
-
-        for subclass in cls._subclasses:
-            yield from cls._storage_by_id.values()
-
-    @classmethod
     def from_name(cls, name: str) -> TRPGObject:
-        if not cls._subclasses:
+        subclasses = _subclasses.get(cls)
+        if subclasses is None:
             try:
                 return cls._storage_by_name[name]
             except KeyError:
                 raise UnknownObject
 
-        for subclass in cls._subclasses:
+        for subclass in subclasses:
             instance = subclass._storage_by_name.get(name)
             if instance is not None:
                 return instance
 
         raise UnknownObject
+
+    @classmethod
+    def all_instances(cls) -> Iterator[RPGObject]:
+        subclasses = _subclasses.get(cls)
+        if subclasses is None:
+            yield from cls._storage_by_id.values()
+
+            return
+
+        for subclass in subclasses:
+            yield from subclass.all_instances()
 
     def __str__(self) -> str:
         return f"{self.name}[{self.id}]"
