@@ -1,15 +1,14 @@
-import time
+from time import time
 
-from command import BaseCommand, CommandResult
-from argparser.arguments import Arguments
-from context import Context
+from handler import BaseCommand, Context, Arguments, CommandResult
+
 from utils.formatting import codeblock
 
 
 class Command(BaseCommand):
     async def run(self, ctx: Context, args: Arguments) -> CommandResult:
         info = {
-            "time": time.time(),
+            "time": time(),
             "prefix": ctx.prefix,
             "alias": ctx.alias,
             "arguments": len(args),

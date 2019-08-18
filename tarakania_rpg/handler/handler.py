@@ -1,6 +1,5 @@
 import os
 import re
-import logging
 import traceback
 import importlib
 
@@ -10,20 +9,17 @@ from typing import TYPE_CHECKING, Dict, Optional, Tuple, Set, Pattern
 
 import discord
 
+from . import log
+from .command import BaseCommand, CommandResult
+from .context import Context
+from .arguments import Arguments
+from .exceptions import ParserError
 from constants import BASE_DIR
-from command import BaseCommand, CommandResult
-from context import Context
-from argparser.arguments import Arguments
-from argparser.exceptions import ParserError
-
 
 if TYPE_CHECKING:
     from bot import TarakaniaRPG
 
 COMMANDS_DIR = os.sep.join((BASE_DIR, "commands"))
-
-
-log = logging.getLogger(__name__)
 
 
 class CommandCheckError(Exception):

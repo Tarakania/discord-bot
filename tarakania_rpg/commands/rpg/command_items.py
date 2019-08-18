@@ -1,9 +1,7 @@
+from handler import BaseCommand, Context, Arguments, CommandResult
+
 from rpg.items import Item
 from rpg.rpg_object import all_instances
-
-from command import BaseCommand, CommandResult
-from argparser.arguments import Arguments
-from context import Context
 from utils.formatting import codeblock
 
 

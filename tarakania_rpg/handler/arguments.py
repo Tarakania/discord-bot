@@ -1,13 +1,9 @@
 from itertools import zip_longest
 from typing import Any, List, Union, Iterator, Optional, overload
 
-from context import Context
-from argparser.converters import Converter
-from argparser.exceptions import (
-    TooFewArguments,
-    TooManyArguments,
-    ConvertError,
-)
+from .context import Context
+from .converters import Converter
+from .exceptions import TooFewArguments, TooManyArguments, ConvertError
 
 
 class Arguments:

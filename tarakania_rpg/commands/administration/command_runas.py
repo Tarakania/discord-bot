@@ -1,13 +1,11 @@
-import copy
+from copy import copy
 
-from command import BaseCommand, CommandResult
-from argparser.arguments import Arguments
-from context import Context
+from handler import BaseCommand, Context, Arguments, CommandResult
 
 
 class Command(BaseCommand):
     async def run(self, ctx: Context, args: Arguments) -> CommandResult:
-        message = copy.copy(ctx.message)
+        message = copy(ctx.message)
         message.author = args[0]
         message.content = f"{ctx.prefix}{args[1].name} {' '.join(args[2:])}"
 

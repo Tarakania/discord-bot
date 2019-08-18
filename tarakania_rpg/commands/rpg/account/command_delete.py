@@ -1,8 +1,6 @@
-from rpg.player import Player, UnknownPlayer
+from handler import BaseCommand, Context, Arguments, CommandResult
 
-from command import BaseCommand, CommandResult
-from argparser.arguments import Arguments
-from context import Context
+from rpg.player import Player, UnknownPlayer
 
 
 class Command(BaseCommand):

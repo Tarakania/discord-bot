@@ -1,9 +1,8 @@
-import discord
+from discord import Embed
+
+from handler import BaseCommand, Context, Arguments, CommandResult
 
 from rpg.player import Player, UnknownPlayer
-from command import BaseCommand, CommandResult
-from argparser.arguments import Arguments
-from context import Context
 
 
 class Command(BaseCommand):
@@ -36,7 +35,7 @@ class Command(BaseCommand):
             "Очки действия": player.stats.action_points,
         }
 
-        e = discord.Embed(
+        e = Embed(
             title="Информация о персонаже",
             description="\n".join(f"{k}: **{v}**" for k, v in info.items()),
         )

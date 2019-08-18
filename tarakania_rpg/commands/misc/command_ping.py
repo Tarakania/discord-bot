@@ -1,16 +1,15 @@
-import time
+from time import time
 
-from command import BaseCommand, CommandResult
-from argparser.arguments import Arguments
-from context import Context
+from handler import BaseCommand, Context, Arguments, CommandResult
+
 from utils.formatting import codeblock
 
 
 class Command(BaseCommand):
     async def run(self, ctx: Context, args: Arguments) -> CommandResult:
-        receive_time = time.time()
+        receive_time = time()
         msg = await ctx.send("Pinging...")
-        request_complete_time = time.time()
+        request_complete_time = time()
 
         receive_diff = (
             receive_time

@@ -1,6 +1,4 @@
-from command import BaseCommand, CommandResult
-from argparser.arguments import Arguments
-from context import Context
+from handler import BaseCommand, Context, Arguments, CommandResult
 
 from rpg.player import (
     Player,

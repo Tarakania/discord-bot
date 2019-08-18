@@ -5,19 +5,19 @@ from typing import Any, Dict, Tuple, TYPE_CHECKING
 import discord
 
 from . import log
+from .context import Context
+from .exceptions import ConvertError
 from rpg.rpg_object import UnknownObject
 from rpg.items import Item as Item_
 from rpg.race import Race as Race_
 from rpg.class_ import Class as Class_
 from rpg.location import Location as Location_
 from rpg.player import Player as Player_, UnknownPlayer
-from context import Context
-from argparser.exceptions import ConvertError
 from regexes import USER_MENTION_OR_ID_REGEX
 
 
 if TYPE_CHECKING:
-    from command import BaseCommand
+    from .command import BaseCommand
 
 
 class _ConverterMeta(type):

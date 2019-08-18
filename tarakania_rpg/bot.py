@@ -8,7 +8,7 @@ import discord
 import argparse
 
 from updater import start_updater
-from handler import Handler
+from handler.handler import Handler
 from sql import create_pg_connection
 
 
