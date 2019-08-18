@@ -149,9 +149,7 @@ class Item(Converter):
 
             return Item_.from_name(value.lower().replace("-", " "))
         except UnknownObject:
-            raise ConvertError(
-                value, self, "Такой предмет не существует найден"
-            )
+            raise ConvertError(value, self, "Такой предмет не существует")
 
 
 class Race(Converter):

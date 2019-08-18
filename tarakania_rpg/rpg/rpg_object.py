@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from logging import getLogger
+from contextlib import suppress
 from typing import Any, Dict, List, Type, Iterator, TypeVar, Tuple
 
 from yaml import safe_load
@@ -111,9 +112,8 @@ class RPGObject(metaclass=_RPGOBjectMeta):
                 raise UnknownObject
 
         for subclass in subclasses:
-            instance = subclass._storage_by_id.get(id)
-            if instance is not None:
-                return instance
+            with suppress(UnknownObject):
+                return subclass.from_id(id)
 
         raise UnknownObject
 
@@ -127,9 +127,8 @@ class RPGObject(metaclass=_RPGOBjectMeta):
                 raise UnknownObject
 
         for subclass in subclasses:
-            instance = subclass._storage_by_name.get(name)
-            if instance is not None:
-                return instance
+            with suppress(UnknownObject):
+                return subclass.from_name(name)
 
         raise UnknownObject
 

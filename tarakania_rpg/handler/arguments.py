@@ -1,6 +1,7 @@
 from itertools import zip_longest
 from typing import Any, List, Union, Iterator, overload
 
+from . import log
 from .context import Context
 from .converters import Converter
 from .exceptions import TooFewArguments, TooManyArguments, ConvertError
@@ -51,6 +52,9 @@ class Arguments:
             except ConvertError:
                 raise
             except Exception as e:
+                log.debug(
+                    f"Unhandled {converter} converter exception: {e.__class__.__name__}: {e}"
+                )
                 raise ConvertError(value, converter) from e
 
             self._converted.append(converted)
