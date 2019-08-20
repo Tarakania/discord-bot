@@ -1,5 +1,4 @@
 ### Git ###
-.git/
 .github/
 .gitignore
 
@@ -14,7 +13,6 @@ Dockerfile
 
 ### Logs ###
 **/*.log
-
 
 ### RPG configs ###
 !tarakania_rpg/data/rpg/
