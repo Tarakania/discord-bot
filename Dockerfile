@@ -1,9 +1,9 @@
 FROM python:3.7-alpine
 
-ARG UID=1500
-ARG GID=1500
+ARG UID=1501
+ARG GID=1501
 
-ARG WH_PORT=8081
+ARG WH_PORT=60000
 ENV WH_PORT ${WH_PORT}
 
 # enables proper stdout flushing
