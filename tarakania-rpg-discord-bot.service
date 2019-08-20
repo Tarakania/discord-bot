@@ -1,13 +1,18 @@
 [Unit]
-Description=Tarakania RPG Discord bot
+Description=Container for Tarakania RPG Discord bot
+After=docker.service
+Requires=docker.service
 
 [Service]
-Type=forking
-WorkingDirectory=/srv/tarakania/discord-bot
-ExecStart=/usr/bin/screen -h 1024 -dmS tarakania-discord-bot python3.7 tarakania_rpg/main.py --production
-User=tarakania
-Group=tarakania
+TimeoutStartSec=0
 Restart=always
+ExecStartPre=-/usr/bin/docker stop %n
+ExecStartPre=-/usr/bin/docker rm %n
+ExecStartPre=/usr/bin/docker pull tarakania/discord-bot
+ExecStart=/usr/bin/docker run --rm --name %n -v /srv/tarakania/discord-bot/tarakania_rpg/data:/code/tarakania_rpg/data tarakania/discord-bot --production
+WorkingDirectory=/srv/tarakania/discord-bot
+User=eugene
+Group=eugene
 
 [Install]
 WantedBy=multi-user.target

@@ -7,18 +7,20 @@ from pathlib import Path
 from constants import DATA_DIR
 
 
+DEFAULT_PORT = "8081"
+DEFAULT_HOST = "0.0.0.0"
 DEFAULT_CONFIG_PATH = os.sep.join((DATA_DIR, "bot-config.yaml"))
 
 argparser = argparse.ArgumentParser(description="Tarakania RPG discord bot")
 argparser.add_argument(
     "--wh-host",
-    default="0.0.0.0",
+    default=os.environ.get("WH_HOST", DEFAULT_HOST),
     help="Host to run webhook on. Defaults to 0.0.0.0",
 )
 argparser.add_argument(
     "--wh-port",
-    default="60000",
-    help="Port to run update webhook on. Defaults to 60000",
+    default=os.environ.get("WH_PORT", DEFAULT_PORT),
+    help=f"Port to run update webhook on. Defaults to {DEFAULT_PORT}",
 )
 argparser.add_argument(
     "--config-file",
