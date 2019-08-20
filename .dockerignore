@@ -16,3 +16,6 @@ Dockerfile
 
 ### RPG configs ###
 !tarakania_rpg/data/rpg/
+
+### Command configs ###
+!tarakania_rpg/commands/**/*.yaml
