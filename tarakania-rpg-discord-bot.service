@@ -9,10 +9,10 @@ Restart=always
 ExecStartPre=-/usr/bin/docker stop %n
 ExecStartPre=-/usr/bin/docker rm %n
 ExecStartPre=/usr/bin/docker pull tarakania/discord-bot
-ExecStart=/usr/bin/docker run --rm --name %n -v /srv/tarakania/discord-bot/tarakania_rpg/data:/code/tarakania_rpg/data tarakania/discord-bot --production
+ExecStart=/usr/bin/docker run --rm --name %n -p 60000:60000 -v /srv/tarakania/discord-bot/tarakania_rpg/data:/code/tarakania_rpg/data tarakania/discord-bot --production
 WorkingDirectory=/srv/tarakania/discord-bot
-User=eugene
-Group=eugene
+User=tarakania
+Group=tarakania
 
 [Install]
 WantedBy=multi-user.target

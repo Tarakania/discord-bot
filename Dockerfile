@@ -12,18 +12,16 @@ ENV PYTHONUNBUFFERED 1
 WORKDIR /code
 
 RUN apk add --no-cache \
-	git \
-	gcc \
-	musl-dev
+	git
 
 # avoid cache invalidation after copying entire directory
 COPY requirements.txt .
 
-RUN pip install --no-cache-dir -r requirements.txt
-
-RUN apk del \
-	gcc \
-	musl-dev
+RUN apk add --no-cache --virtual build-deps \
+		gcc \
+		musl-dev && \
+    pip install --no-cache-dir -r requirements.txt && \
+    apk del build-deps
 
 EXPOSE ${WH_PORT}
 
