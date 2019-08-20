@@ -1,0 +1,20 @@
+### Git ###
+.git/
+.github/
+.gitignore
+
+### Docker ###
+.dockerignore
+Dockerfile
+
+### Configs ###
+**/*.json
+**/*.yaml
+**/*.yml
+
+### Logs ###
+**/*.log
+
+
+### RPG configs ###
+!tarakania_rpg/data/rpg/
