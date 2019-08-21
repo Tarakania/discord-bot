@@ -18,7 +18,7 @@ class Command(BaseCommand):
             return "У вас нет персонажа"
 
         try:
-            await player.equip_item(args[0], ctx.bot.pg)
+            unequipped = await player.equip_item(args[0], ctx.bot.pg)
         except ItemNotFound:
             return f"В вашем инвентаре нет **{args[0]}**"
         except ItemUnequippable:
@@ -28,4 +28,7 @@ class Command(BaseCommand):
         except UnableToEquip:
             return f"Вы не можете экипировать **{args[0]}** в данный момент"
 
-        return f"Предмет **{args[0]}** экипирован"
+        if unequipped is None:
+            return f"Предмет **{args[0]}** экипирован"
+
+        return f"Предмет **{unequipped}** заменён на **{args[0]}**"

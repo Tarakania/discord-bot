@@ -11,7 +11,20 @@ class Command(BaseCommand):
         except UnknownPlayer:
             return "У вас нет персонажа"
 
-        if not player.inventory.size:
-            return "Ваш инвентарь пуст"
+        if player.inventory.size:
+            inventory = "\n".join(str(i) for i in player.inventory)
+        else:
+            inventory = "Ваш инвентарь пуст"
 
-        return codeblock("\n".join(str(i) for i in player.inventory))
+        equipment_item_map = [
+            (slot, getattr(player.equipment, slot))
+            for slot in player.equipment._slots
+        ]
+
+        equipment = "\n".join(
+            f"{slot:>10}: {item}" for (slot, item) in equipment_item_map
+        )
+
+        return codeblock(
+            f"Экипировка:\n\n{equipment}\n\nИнвентарь:\n\n{inventory}"
+        )
