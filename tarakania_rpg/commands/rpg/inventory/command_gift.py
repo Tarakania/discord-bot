@@ -38,4 +38,9 @@ class Command(BaseCommand):
         await player.remove_item(item, ctx.bot.pg)
         await player2.add_item(item, ctx.bot.pg)
 
-        return f"**{ctx.author}** передал **{item}** **{player2}**{' из экипировки' if from_equipment else ''}"
+        return await confirmation_request.edit(
+            content=(
+                f"**{ctx.author}** передал **{item}** **{player2}**"
+                f"{' из экипировки' if from_equipment else ''}"
+            )
+        )
