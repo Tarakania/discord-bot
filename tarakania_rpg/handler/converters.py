@@ -129,16 +129,6 @@ class Command(Converter):
         return command
 
 
-class Player(Converter):
-    type_name = "player"
-
-    async def convert(self, ctx: Context, value: str) -> Player_:
-        try:
-            return await Player_.from_nick(value, ctx.bot.pg)
-        except UnknownPlayer:
-            raise ConvertError(value, self, "Игрок с таким ником не найден")
-
-
 class Item(Converter):
     type_name = "item"
 
@@ -256,3 +246,15 @@ class User(Converter):
             return found[0][0]
 
         raise ConvertError(value, self, "Пользователь не найден")
+
+
+class Player(User):
+    type_name = "player"
+
+    async def convert(self, ctx: Context, value: str) -> Player_:
+        user = await super().convert(ctx, value)
+
+        try:
+            return await Player_.from_id(user.id, ctx.bot.pg)
+        except UnknownPlayer:
+            raise ConvertError(value, self, f"У **{user}** нет персонажа")
