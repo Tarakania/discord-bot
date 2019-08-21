@@ -1,5 +1,7 @@
 from handler import BaseCommand, Context, Arguments, CommandResult
+
 from rpg.player import Player, UnknownPlayer
+from utils.confirmations import request_confirmation
 
 
 class Command(BaseCommand):
@@ -9,20 +11,31 @@ class Command(BaseCommand):
         except UnknownPlayer:
             return "У вас нет персонажа"
 
-        if player == args[1]:
+        item = args[0]
+        player2 = args[1]
+
+        if player == player2:
             return "Нельзя дарить вещи себе"
 
         from_equipment = False
-        if args[0] in player.inventory:
+        if item in player.inventory:
             pass
-        elif args[0] in player.equipment:
+        elif item in player.equipment:
             from_equipment = True
         else:
-            return f"В вашем инвентаре и экипировке нет **{args[0]}**"
+            return f"В вашем инвентаре и экипировке нет **{item}**"
 
-        # TODO: confirmation
+        confirmation_request = await ctx.send(
+            f"Вы действительно хотите передать **{item}** персонажу **{player2}**?"
+        )
+        confirmation = await request_confirmation(ctx, confirmation_request)
 
-        item = await player.remove_item(args[0], ctx.bot.pg)
-        await args[1].add_item(item, ctx.bot.pg)
+        if not confirmation:
+            return await confirmation_request.edit(
+                content="Вы не подтвердили передачу предемета"
+            )
 
-        return f"**{ctx.author}** передал **{args[0]}** **{args[1]}**{' из экипировки' if from_equipment else ''}"
+        await player.remove_item(item, ctx.bot.pg)
+        await player2.add_item(item, ctx.bot.pg)
+
+        return f"**{ctx.author}** передал **{item}** **{player2}**{' из экипировки' if from_equipment else ''}"

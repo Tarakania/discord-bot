@@ -118,6 +118,24 @@ class Integer(Converter):
         return int(value)
 
 
+class Bool(Converter):
+    type_name = "bool"
+
+    POSITIVE = {"1", "y", "д", "да", "+", "ок"}
+    NEGATIVE = {"0", "n", "н", "нет", "-"}
+
+    async def convert(self, ctx: Context, value: str) -> bool:
+        lower_value = value.lower()
+
+        if lower_value in self.POSITIVE:
+            return True
+
+        if lower_value in self.NEGATIVE:
+            return False
+
+        raise ConvertError(value, self, "Не удалось понять ввод")
+
+
 class Command(Converter):
     type_name = "command"
 
@@ -178,7 +196,7 @@ class Location(Converter):
 
             return Location_.from_name(value.lower().replace("-", " "))
         except UnknownObject:
-            raise ConvertError(value, self, "Такой локация не существует")
+            raise ConvertError(value, self, "Такой локации не существует")
 
 
 class User(Converter):
