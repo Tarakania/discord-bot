@@ -81,6 +81,8 @@ class PlayerInventory:
     async def add(
         self, item: Union[int, Item], player: Player, pool: asyncpg.Pool
     ) -> Item:
+        """Add item to player inventory. Returns added item on success."""
+
         if isinstance(item, int):
             item = Item.from_id(item)
 
@@ -97,6 +99,11 @@ class PlayerInventory:
     async def remove(
         self, item: Union[int, Item], player: Player, pool: asyncpg.Pool
     ) -> Item:
+        """
+        Remove item from inventory.
+        Returns removed item on success.
+        """
+
         if isinstance(item, int):
             item = Item.from_id(item)
 
@@ -114,6 +121,8 @@ class PlayerInventory:
         return item
 
     def __contains__(self, obj: object) -> bool:
+        """Check if item is in player's inventory."""
+
         if isinstance(obj, int):
             item: Item = Item.from_id(obj)
         elif isinstance(obj, Item):
@@ -124,6 +133,8 @@ class PlayerInventory:
         return item in self._items
 
     def __iter__(self) -> Iterator[Item]:
+        """Iterate inventory items."""
+
         yield from self._items
 
 
@@ -196,6 +207,8 @@ class PlayerEquipmnent:
 
     @staticmethod
     def can_equip(item: Union[int, Equippable], player: Player) -> bool:
+        """Check if item can be equipped."""
+
         if isinstance(item, int):
             item = Equippable.from_id(item)
 
@@ -208,24 +221,25 @@ class PlayerEquipmnent:
     async def equip(
         self, item: Union[int, Equippable], player: Player, pool: asyncpg.Pool
     ) -> Optional[Equippable]:
+        """Equip item. Returns replaced item on success."""
+
         if isinstance(item, int):
             item = Equippable.from_id(item)
 
-        if item in self:
+        if isinstance(item, Weapon):
+            slot_name = "weapon"
+        elif isinstance(item, Armor):
+            slot_name = item.type
+        else:
+            raise TypeError(f"Unable to equip {item!r}")
+
+        currently_equipped = getattr(self, slot_name)
+
+        if currently_equipped == item:
             raise ItemAlreadyEquipped
 
         if not player.can_equip(item):
             raise UnableToEquip
-
-        if isinstance(item, Weapon):
-            unequipped = self.weapon
-            slot_name = "weapon"
-
-        elif isinstance(item, Armor):
-            unequipped = getattr(self, item.type)
-            slot_name = item.type
-        else:
-            raise TypeError(f"Unable to equip {item!r}")
 
         # f-string is safe here because slot_name is checked against _slots in
         # all scenarios
@@ -235,7 +249,9 @@ class PlayerEquipmnent:
             player.discord_id,
         )
 
-        return unequipped
+        setattr(self, slot_name, item)
+
+        return currently_equipped
 
     async def unequip(
         self, item: Union[int, Equippable], player: Player, pool: asyncpg.Pool
@@ -260,6 +276,8 @@ class PlayerEquipmnent:
             None,
             player.discord_id,
         )
+
+        setattr(self, slot_name, None)
 
         return item
 
@@ -615,22 +633,6 @@ class Player:
         return cls.from_data(player_data, equipment_data)
 
     @classmethod
-    async def from_nick(cls, nick: str, conn: asyncpg.Connection) -> Player:
-        player_data = await conn.fetchrow(
-            "SELECT * FROM players WHERE nick = $1", nick
-        )
-
-        if player_data is None:
-            raise UnknownPlayer
-
-        equipment_data = await conn.fetchrow(
-            "SELECT * FROM equipment WHERE discord_id = $1",
-            player_data["discord_id"],
-        )
-
-        return cls.from_data(player_data, equipment_data)
-
-    @classmethod
     def from_data(
         cls, player_data: Dict[str, Any], equipment_data: Dict[str, Any]
     ) -> Player:
@@ -650,20 +652,32 @@ class Player:
 
     @property
     def level(self) -> int:
+        """Get current level."""
+
         return xp_to_level(self.xp)
 
     @property
     def xp_to_next_level(self) -> int:
+        """Get amount of xp required to get next level."""
+
         return level_to_xp(self.level + 1) - self.xp
 
     async def add_item(self, item: Item, pool: asyncpg.Pool) -> Item:
+        """
+        Add item to player inventory.
+        Returns added item on success.
+        """
+
         if isinstance(item, int):
             item = Item.from_id(item)
 
         return await self.inventory.add(item, self, pool)
 
     async def remove_item(self, item: Item, pool: asyncpg.Pool) -> Item:
-        """Remove item from inventory (preferable) or equipment"""
+        """
+        Remove item from inventory (preferable) or equipment.
+        Returns removed item on success.
+        """
 
         if isinstance(item, int):
             item = Item.from_id(item)
@@ -680,11 +694,18 @@ class Player:
         return await self.inventory.remove(item, self, pool)
 
     def can_equip(self, item: Union[int, Equippable]) -> bool:
+        """Check if item can be equipped."""
+
         return self.equipment.can_equip(item, self)
 
     async def equip_item(
         self, item: Union[int, Equippable], pool: asyncpg.Pool
-    ) -> Item:
+    ) -> Optional[Equippable]:
+        """
+        Equip item from inventory to equipment.
+        Returns replaced item on success.
+        """
+
         if isinstance(item, int):
             item = Equippable.from_id(item)
 
@@ -694,14 +715,21 @@ class Player:
         if not self.can_equip(item):
             raise UnableToEquip
 
-        unequipped = await self.inventory.remove(item, self, pool)
-        await self.equipment.equip(item, self, pool)
+        await self.inventory.remove(item, self, pool)
+        unequipped = await self.equipment.equip(item, self, pool)
+
+        if unequipped is not None:
+            await self.inventory.add(unequipped, self, pool)
 
         return unequipped
 
     async def unequip_item(
         self, item: Union[int, Equippable], pool: asyncpg.Pool
     ) -> Item:
+        """
+        Equip item into player equipment. Returns equipped item on success.
+        """
+
         if isinstance(item, int):
             item = Equippable.from_id(item)
 
@@ -709,6 +737,8 @@ class Player:
         return await self.inventory.add(item, self, pool)
 
     def __contains__(self, obj: object) -> bool:
+        """Check if item is in player's inventory or equipment."""
+
         if isinstance(obj, int):
             item: Item = Item.from_id(obj)
         elif isinstance(obj, Item):
