@@ -70,21 +70,6 @@ class PlayerInventory:
 
         return cls.from_data(data)
 
-    async def add_gift(
-            self, item: Union[int, Item], player: Player, pool: asyncpg.Pool
-    ) -> Item:
-        if isinstance(item, int):
-            item = Item.from_nick(item)
-
-        self._items.append(item)
-
-        await pool.fetch(
-            "UPDATE players SET inventory = $1 WHERE nick = $2",
-            [i.id for i in self._items],
-            player.nick)
-
-        return item
-
     @classmethod
     def from_data(cls, data: List[int]) -> PlayerInventory:
         return cls(items=data)
@@ -127,6 +112,16 @@ class PlayerInventory:
         )
 
         return item
+
+    def __contains__(self, obj: object) -> bool:
+        if isinstance(obj, int):
+            item: Item = Item.from_id(obj)
+        elif isinstance(obj, Item):
+            item = obj
+        else:
+            return False
+
+        return item in self._items
 
     def __iter__(self) -> Iterator[Item]:
         yield from self._items
@@ -267,6 +262,16 @@ class PlayerEquipmnent:
         )
 
         return item
+
+    def __contains__(self, obj: object) -> bool:
+        if isinstance(obj, int):
+            item: Equippable = Equippable.from_id(obj)
+        elif isinstance(obj, Equippable):
+            item = obj
+        else:
+            return False
+
+        return item in self.__iter__()
 
     def __iter__(self) -> Iterator[Equippable]:
         for name in self._slots:
@@ -657,13 +662,9 @@ class Player:
 
         return await self.inventory.add(item, self, pool)
 
-    async def add_item_gift(self, item: Item, pool: asyncpg.Pool) -> Item:
-        if isinstance(item, int):
-            item = Item.from_id(item)
-
-        return await self.inventory.add_gift(item, self, pool)
-
     async def remove_item(self, item: Item, pool: asyncpg.Pool) -> Item:
+        """Remove item from inventory (preferable) or equipment"""
+
         if isinstance(item, int):
             item = Item.from_id(item)
 
@@ -672,6 +673,9 @@ class Player:
             if isinstance(item, Equippable):
                 with suppress(ItemAlreadyUnequipped):
                     await self.equipment.unequip(item, self, pool)
+
+                    # avoid adding item to inventory and removing it again
+                    return item
 
         return await self.inventory.remove(item, self, pool)
 
@@ -703,6 +707,28 @@ class Player:
 
         await self.equipment.unequip(item, self, pool)
         return await self.inventory.add(item, self, pool)
+
+    def __contains__(self, obj: object) -> bool:
+        if isinstance(obj, int):
+            item: Item = Item.from_id(obj)
+        elif isinstance(obj, Item):
+            item = obj
+        else:
+            return False
+
+        return item in self.inventory or item in self.equipment
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Player):
+            raise NotImplementedError
+
+        return self.discord_id == other.discord_id
+
+    def __ne__(self, other: object) -> bool:
+        if not isinstance(other, Player):
+            raise NotImplementedError
+
+        return self.discord_id != other.discord_id
 
     def __str__(self) -> str:
         return self.nick

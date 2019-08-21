@@ -5,4 +5,4 @@ arguments:
   - name: предмет
     type: item
   - name: ник
-    type: string
+    type: player
