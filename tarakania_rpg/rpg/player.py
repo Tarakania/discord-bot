@@ -70,6 +70,21 @@ class PlayerInventory:
 
         return cls.from_data(data)
 
+    async def add_gift(
+            self, item: Union[int, Item], player: Player, pool: asyncpg.Pool
+    ) -> Item:
+        if isinstance(item, int):
+            item = Item.from_nick(item)
+
+        self._items.append(item)
+
+        await pool.fetch(
+            "UPDATE players SET inventory = $1 WHERE nick = $2",
+            [i.id for i in self._items],
+            player.nick)
+
+        return item
+
     @classmethod
     def from_data(cls, data: List[int]) -> PlayerInventory:
         return cls(items=data)
@@ -641,6 +656,12 @@ class Player:
             item = Item.from_id(item)
 
         return await self.inventory.add(item, self, pool)
+
+    async def add_item_gift(self, item: Item, pool: asyncpg.Pool) -> Item:
+        if isinstance(item, int):
+            item = Item.from_id(item)
+
+        return await self.inventory.add_gift(item, self, pool)
 
     async def remove_item(self, item: Item, pool: asyncpg.Pool) -> Item:
         if isinstance(item, int):
