@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 from aiohttp import web
 
+from cli import args
 from utils.subprocess import run_subprocess_shell
 
 
@@ -52,7 +53,11 @@ async def parse_github_request(req: web.Request) -> None:
 async def git_pull() -> None:
     git_log.info("Pull started")
 
-    await run_subprocess_shell("git pull origin master")
+    if args.production:
+        await run_subprocess_shell("git fetch --all")
+        await run_subprocess_shell("git reset --hard origin/master")
+    else:
+        await run_subprocess_shell("git pull origin master")
 
     git_log.info("Pull completed")
 
@@ -60,7 +65,7 @@ async def git_pull() -> None:
 async def notify_restart_started(
     bot: "TarakaniaRPG", commits_count: int = -1
 ) -> None:
-    if not bot.args.enable_notifications:
+    if not args.enable_notifications:
         return
 
     update_channel = bot.get_channel(UPDATE_CHANNEL_ID)
@@ -80,14 +85,14 @@ async def notify_restart_started(
 
 
 async def notify_boot_completed(bot: "TarakaniaRPG") -> None:
-    if not bot.args.enable_notifications:
+    if not args.enable_notifications:
         return
 
     update_channel = bot.get_channel(UPDATE_CHANNEL_ID)
 
     boot_message = "\N{INFORMATION SOURCE} Бот успешно авторизировался"
 
-    if not bot.args.production:
+    if not args.production:
         boot_message += "\n\N{WARNING SIGN} Работаю в режиме отладки"
 
     try:
@@ -120,7 +125,7 @@ async def update_webhook_endpoint(req: web.Request) -> web.Response:
 
 
 async def start_updater(bot: "TarakaniaRPG") -> None:
-    if not bot.args.enable_updater:
+    if not args.enable_updater:
         return
 
     app = web.Application()
@@ -136,9 +141,9 @@ async def start_updater(bot: "TarakaniaRPG") -> None:
     app["runner"] = runner
 
     await runner.setup()
-    site = web.TCPSite(runner, bot.args.wh_host, bot.args.wh_port)
+    site = web.TCPSite(runner, args.wh_host, args.wh_port)
     await site.start()
 
-    log.info(f"Listening for github events on port {bot.args.wh_port}")
+    log.info(f"Listening for github events on port {args.wh_port}")
 
     await notify_boot_completed(bot)
