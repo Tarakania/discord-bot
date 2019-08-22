@@ -68,7 +68,7 @@ class RPGObject(metaclass=_RPGOBjectMeta):
     @staticmethod
     def _read_objects_from_file(cls: Type[TRPGObject]) -> Dict[int, Any]:
         with open(
-            f"{DATA_DIR}/rpg/{cls.config_folder}{cls.config_filename}"
+            f"{DATA_DIR}/rpg/{cls.config_folder}{cls.config_filename}", encoding='utf8'
         ) as f:
             data = safe_load(f)
 
