@@ -38,7 +38,7 @@ class BaseCommand:
             f"{sys.modules[self.__module__].__file__[:-2]}yaml"
         )
 
-        with open(configuration_path,,encoding='utf8') as f:
+        with open(configuration_path,encoding='utf8') as f:
             data = yaml.load(f, Loader=yaml.SafeLoader)
 
         self.name = data["name"]
