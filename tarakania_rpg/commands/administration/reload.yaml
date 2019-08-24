@@ -1,0 +1,8 @@
+aliases: r
+short_help: "Перезагружает команды без остановки бота 123"
+owner_only: yes
+
+arguments:
+  - name: команда
+    type: command
+    greedy: yes

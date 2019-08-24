@@ -1,10 +1,12 @@
+from logging import getLogger
 from itertools import zip_longest
 from typing import Any, List, Union, Iterator, overload
 
-from . import log
 from .context import Context
 from .converters import Converter
 from .exceptions import TooFewArguments, TooManyArguments, ConvertError
+
+log = getLogger(__name__)
 
 
 class Arguments:

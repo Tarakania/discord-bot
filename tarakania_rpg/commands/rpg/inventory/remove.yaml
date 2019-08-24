@@ -1,0 +1,5 @@
+short_help: Удаляет предмет из вашего инвентаря
+
+arguments:
+  - name: предмет
+    type: item

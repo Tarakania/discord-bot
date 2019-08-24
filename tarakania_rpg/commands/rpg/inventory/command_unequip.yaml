@@ -1,7 +1,0 @@
-name: unequip
-aliases: uneq
-short_help: Убирает предмет из вашей экипировки в инвентарь
-
-arguments:
-  - name: предмет
-    type: item

@@ -1,0 +1,7 @@
+short_help: Передает предмет другому игроку
+
+arguments:
+  - name: предмет
+    type: item
+  - name: ник
+    type: player

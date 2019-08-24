@@ -1,0 +1,5 @@
+short_help: Выдаёт вам предмет
+
+arguments:
+  - name: предмет
+    type: item

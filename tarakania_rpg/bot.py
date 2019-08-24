@@ -64,11 +64,16 @@ class TarakaniaRPG(discord.AutoShardedClient):
         await self._handler.prepare_prefixes()
         await self._handler.load_all_commands()
 
-        print(
+        log.info(
             f"Running in {'production' if self.args.production else 'debug'} mode"
         )
-        print(TARAKANIA_RPG_ASCII_ART)
-        print(f"Bot is ready to operate as {self.user}")
+
+        for line in TARAKANIA_RPG_ASCII_ART.split("\n"):
+            log.info(line)
+
+        log.info(
+            f"Ready to operate as {self.user}. Prefix: {self.config['default-prefix']}"
+        )
 
     async def on_message(self, msg: discord.Message) -> None:
         await self._handler.process_message(msg)

@@ -1,5 +1,0 @@
-name: item
-short_help: Показывает информацию о предемете (временное решение)
-
-arguments:
-  - type: item

@@ -1,10 +1,10 @@
 from __future__ import annotations
 
+from logging import getLogger
 from typing import Any, Dict, Tuple, TYPE_CHECKING
 
 import discord
 
-from . import log
 from .context import Context
 from .exceptions import ConvertError
 from rpg.rpg_object import UnknownObject
@@ -17,7 +17,9 @@ from regexes import USER_MENTION_OR_ID_REGEX
 
 
 if TYPE_CHECKING:
-    from .command import BaseCommand
+    from .command import Command
+
+log = getLogger(__name__)
 
 
 class _ConverterMeta(type):
@@ -136,10 +138,10 @@ class Bool(Converter):
         raise ConvertError(value, self, "Не удалось понять ввод")
 
 
-class Command(Converter):
+class Command_(Converter):
     type_name = "command"
 
-    async def convert(self, ctx: Context, value: str) -> "BaseCommand":
+    async def convert(self, ctx: Context, value: str) -> Command:
         command = ctx.bot._handler.get_command(value.lower())
         if command is None:
             raise ConvertError(value, self, "Такой команды не существует")

@@ -1,25 +1,23 @@
 import os
 import re
 import traceback
-import importlib
 
 from shlex import split
-from types import ModuleType
-from typing import TYPE_CHECKING, Dict, Optional, Tuple, Set, Pattern
+from logging import getLogger
+from typing import TYPE_CHECKING, Dict, Optional, Tuple, Set, Pattern, Iterator
 
 import discord
 
-from . import log
-from .command import BaseCommand, CommandResult
+from .command import Command, CommandResult
 from .context import Context
 from .arguments import Arguments
 from .exceptions import ParserError
-from constants import BASE_DIR
+from constants import COMMANDS_DIR
 
 if TYPE_CHECKING:
     from bot import TarakaniaRPG
 
-COMMANDS_DIR = os.sep.join((BASE_DIR, "commands"))
+log = getLogger(__name__)
 
 PREFIX_REGEX = (
     r"^(?P<prefix>({prefixes}))\s*(?P<command>\w+)(?:\s+(?P<arguments>.+))?$"
@@ -35,21 +33,20 @@ class Handler:
         self.bot = bot
 
         self._custom_prefixes: Dict[int, str] = {}
-        self._commands: Dict[str, BaseCommand] = {}
-        self._imported: Dict[str, ModuleType] = {}
+        self._commands: Dict[str, Command] = {}
 
     async def load_command(
         self, command_path: str, raise_on_error: bool = False
-    ) -> Optional[BaseCommand]:
-        name = command_path.rsplit(os.sep, 1)[1][8:-3]
-        module_path = command_path.replace(os.sep, ".")[:-3]
+    ) -> Optional[Command]:
+        """Load a single command."""
 
-        log.info(f"Loading {name}")
+        log.debug(f"Loading {command_path}")
+
         try:
-            imported = importlib.import_module(module_path)
-            command = getattr(imported, "Command")(self.bot)
+            command = Command(self.bot, command_path)
+            await command.init()
         except Exception:
-            log.exception(f"Error loading {name}")
+            log.exception(f"Error loading {command_path}")
 
             if raise_on_error:
                 raise
@@ -59,23 +56,19 @@ class Handler:
         for alias in command.aliases:
             self._commands[alias] = command
 
-        self._imported[command.name] = imported
-
         return command
 
     async def reload_command(
         self, name: str, raise_on_error: bool = False
-    ) -> Optional[BaseCommand]:
-        imported = self._imported.get(name)
-        if imported is None:
-            return None
+    ) -> Optional[Command]:
+        """Reload a single command."""
 
-        old_aliases = self._commands[name].aliases
+        command = self._commands[name]
+        old_aliases = command.aliases
 
         log.info(f"Reloading {name}")
         try:
-            reloaded = importlib.reload(imported)
-            command = getattr(reloaded, "Command")(self.bot)
+            await command.reload()
         except Exception:
             log.exception(f"Error reloading {name}")
 
@@ -90,26 +83,24 @@ class Handler:
         for alias in command.aliases:
             self._commands[alias] = command
 
-        self._imported[name] = reloaded
-
         return command
 
     async def load_all_commands(self) -> None:
-        commands_found = []
+        log.info("Started loading commands")
 
+        for command_path in self._iterate_command_configurations():
+            await self.load_command(command_path)
+
+        log.info(f"Loaded commands with {len(self._commands)} aliases")
+
+    def _iterate_command_configurations(self) -> Iterator[str]:
         for path, dirs, files in os.walk(COMMANDS_DIR):
             for f in files:
-                if f.startswith("command_") and f.endswith(".py"):
+                if f.endswith(".yaml"):
                     full_path = os.sep.join((path, f))
                     relative_path = os.path.relpath(full_path)
-                    commands_found.append(
-                        os.sep.join(relative_path.split(os.sep)[1:])
-                    )
 
-        log.info("Started loading commands")
-        for command_path in commands_found:
-            await self.load_command(command_path)
-        log.info(f"Loaded commands with {len(self._commands)} aliases")
+                    yield relative_path[:-5]
 
     async def prepare_prefixes(self) -> None:
         bot_id = self.bot.user.id
@@ -263,10 +254,10 @@ class Handler:
                 f"Invalid type returned by command {ctx.command.name}: {type(response)}"
             )
 
-    def get_command(self, name: str) -> Optional[BaseCommand]:
+    def get_command(self, name: str) -> Optional[Command]:
         return self._commands.get(name)
 
-    def get_all_commands(self, with_hidden: bool = False) -> Set[BaseCommand]:
+    def get_all_commands(self, with_hidden: bool = False) -> Set[Command]:
         return set(
             c for c in self._commands.values() if not c.hidden or with_hidden
         )

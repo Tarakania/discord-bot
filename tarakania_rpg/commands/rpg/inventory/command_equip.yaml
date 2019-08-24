@@ -1,7 +1,0 @@
-name: equip
-aliases: eq
-short_help: Экипирует предмет из вашего инвентаря
-
-arguments:
-  - name: предмет
-    type: item

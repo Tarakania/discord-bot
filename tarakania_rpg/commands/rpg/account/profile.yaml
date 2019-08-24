@@ -1,0 +1,7 @@
+aliases: p
+short_help: Получение информации о игроке по нику
+
+arguments:
+  - name: ник
+    type: player
+    optional: true

@@ -5,7 +5,7 @@ import discord
 
 if TYPE_CHECKING:
     from bot import TarakaniaRPG
-    from .command import BaseCommand
+    from .command import Command
 
 
 class Context:
@@ -24,7 +24,7 @@ class Context:
         self,
         bot: "TarakaniaRPG",
         message: discord.Message,
-        command: "BaseCommand",
+        command: "Command",
         prefix: str,
         alias: str,
     ):

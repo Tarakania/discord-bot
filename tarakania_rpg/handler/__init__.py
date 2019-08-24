@@ -1,10 +1,6 @@
-import logging
-
-log = logging.getLogger(__name__)
-
-from .context import Context  # noqa: E402
-from .command import BaseCommand, CommandResult  # noqa: E402
-from .arguments import Arguments  # noqa: E402
+from .context import Context
+from .command import CommandResult
+from .arguments import Arguments
 
 
-__all__ = ("Context", "BaseCommand", "CommandResult", "Arguments")
+__all__ = ("Context", "CommandResult", "Arguments")
