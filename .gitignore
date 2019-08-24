@@ -1,6 +1,10 @@
 # Config files
 *.json
-tarakania_rpg/data/bot-config.yaml
+*.yaml
+*.yml
+
+!.pre-commit-config.yaml
+!.travis.yaml
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
