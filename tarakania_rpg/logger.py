@@ -6,6 +6,7 @@ from cli import args
 
 
 LEVEL_TO_COLOR_VALUE = {
+    "INFO": "32",  # green
     "WARNING": "33",  # yellow
     "ERROR": "31",  # red
     "CRITICAL": "41",  # white on red
