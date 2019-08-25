@@ -28,3 +28,6 @@ class Item(RPGObject):
             raise NotImplementedError
 
         return self.id != other.id
+
+    def __hash__(self) -> int:
+        return super().__hash__()

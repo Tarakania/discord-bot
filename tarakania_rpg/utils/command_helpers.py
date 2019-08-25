@@ -3,7 +3,9 @@ from handler.context import Context
 from handler.command import StopCommandExecution
 
 
-async def get_author_player(ctx: Context, error_text:str="У вас нет персонажа") -> Player:
+async def get_author_player(
+    ctx: Context, error_text: str = "У вас нет персонажа"
+) -> Player:
     """Return player object of message author."""
 
     try:

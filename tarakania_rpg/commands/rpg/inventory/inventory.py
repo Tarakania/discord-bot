@@ -2,13 +2,23 @@ from handler import Context, Arguments, CommandResult
 
 from utils.formatting import codeblock
 from utils.command_helpers import get_author_player
+from typing import Dict
+from rpg.items import Item
 
 
-async def run(ctx: Context, args: Arguments) -> CommandResult:
+async def run(
+    ctx: Context, args: Arguments, counts: Dict[Item, int]
+) -> CommandResult:
     player = await get_author_player(ctx)
 
     if player.inventory.size:
-        inventory = "\n".join(str(i) for i in player.inventory)
+        for item in player.inventory:
+            counts[item] = counts.get(item, 0) + 1
+
+        inventory = "\n".join(
+            f"{item}{' x ' + str(count) if count > 1 else ''}"
+            for item, count in counts.items()
+        )
     else:
         inventory = "Ваш инвентарь пуст"
 
