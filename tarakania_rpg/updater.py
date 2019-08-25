@@ -9,7 +9,6 @@ from aiohttp import web
 from cli import args
 from utils.subprocess import run_subprocess_shell
 
-
 if TYPE_CHECKING:
     from bot import TarakaniaRPG
 

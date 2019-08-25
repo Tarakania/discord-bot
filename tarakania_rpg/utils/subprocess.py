@@ -1,8 +1,7 @@
 import logging
 
+from typing import IO, Any, Tuple, AnyStr, Optional
 from asyncio import subprocess
-from typing import IO, AnyStr, Optional, Any, Tuple
-
 
 log = logging.getLogger(__name__)
 

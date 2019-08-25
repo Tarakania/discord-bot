@@ -4,7 +4,6 @@ from datetime import timedelta
 from humanize import naturaltime
 
 from handler import Context, Arguments, CommandResult
-
 from utils.formatting import codeblock
 
 

@@ -1,7 +1,6 @@
 from time import time
 
 from handler import Context, Arguments, CommandResult
-
 from utils.formatting import codeblock
 
 

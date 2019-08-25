@@ -1,7 +1,6 @@
 from typing import Dict
 
 from handler import Context, Arguments, CommandResult
-
 from rpg.items import Item
 from utils.formatting import codeblock
 from utils.command_helpers import get_author_player

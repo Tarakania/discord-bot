@@ -1,4 +1,5 @@
-from .consumable import Consumable
+from .consumable import Consumable  # isort:skip
+
 from .food import Food
 from .potion import Potion
 

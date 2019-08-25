@@ -1,8 +1,6 @@
 from handler import Context, Arguments, CommandResult
-
-from utils.command_helpers import get_author_player
 from utils.confirmations import request_phrase_confirmation
-
+from utils.command_helpers import get_author_player
 
 CONFIRMATION_PHRASE = "Подтверждаю"
 

@@ -1,6 +1,6 @@
-import asyncpg
-
 from typing import Dict
+
+import asyncpg
 
 
 async def create_pg_connection(

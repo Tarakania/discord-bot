@@ -1,7 +1,6 @@
 from yaml import safe_load
 
 from handler import Context, Arguments, CommandResult
-
 from rpg.items.item import Item
 
 

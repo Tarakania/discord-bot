@@ -1,6 +1,5 @@
 import re
 
-
 ID_EXPR = r"\d{17,19}"
 USER_MENTION_EXPR = fr"<@!?({ID_EXPR})>"
 ROLE_MENTION_EXPR = fr"<@&({ID_EXPR})>"

@@ -6,7 +6,6 @@ from pathlib import Path
 
 from constants import DATA_DIR
 
-
 DEFAULT_PORT = "8081"
 DEFAULT_HOST = "0.0.0.0"
 DEFAULT_CONFIG_PATH = os.sep.join((DATA_DIR, "bot-config.yaml"))

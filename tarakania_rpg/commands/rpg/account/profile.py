@@ -1,7 +1,6 @@
 from discord import Embed
 
 from handler import Context, Arguments, CommandResult
-
 from utils.command_helpers import get_author_player
 
 

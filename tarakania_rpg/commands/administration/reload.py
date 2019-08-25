@@ -1,7 +1,6 @@
 import traceback
 
 from handler import Context, Arguments, CommandResult
-
 from utils.formatting import codeblock
 
 

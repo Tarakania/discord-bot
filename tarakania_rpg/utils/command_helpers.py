@@ -1,6 +1,6 @@
 from rpg.player import Player, UnknownPlayer
-from handler.context import Context
 from handler.command import StopCommandExecution
+from handler.context import Context
 
 
 async def get_author_player(

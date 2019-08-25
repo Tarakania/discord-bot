@@ -1,5 +1,4 @@
 from handler import Context, Arguments, CommandResult
-
 from rpg.items import Item
 from utils.formatting import codeblock
 

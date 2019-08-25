@@ -1,20 +1,21 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, Any, Dict, Tuple
 from logging import getLogger
-from typing import Any, Dict, Tuple, TYPE_CHECKING
 
 import discord
 
+from regexes import USER_MENTION_OR_ID_REGEX
+from rpg.race import Race as Race_
+from rpg.items import Item as Item_
+from rpg.class_ import Class as Class_
+from rpg.player import Player as Player_
+from rpg.player import UnknownPlayer
+from rpg.location import Location as Location_
+from rpg.rpg_object import UnknownObject
+
 from .context import Context
 from .exceptions import ConvertError
-from rpg.rpg_object import UnknownObject
-from rpg.items import Item as Item_
-from rpg.race import Race as Race_
-from rpg.class_ import Class as Class_
-from rpg.location import Location as Location_
-from rpg.player import Player as Player_, UnknownPlayer
-from regexes import USER_MENTION_OR_ID_REGEX
-
 
 if TYPE_CHECKING:
     from .command import Command

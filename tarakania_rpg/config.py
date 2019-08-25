@@ -1,9 +1,10 @@
 import os
 import sys
-import yaml
 import logging
 
-from typing import Dict, Any
+from typing import Any, Dict
+
+import yaml
 
 from constants import DATA_DIR
 

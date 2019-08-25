@@ -1,12 +1,10 @@
 from handler import Context, Arguments, CommandResult
-
 from rpg.player import (
     ItemNotFound,
+    UnableToEquip,
     ItemUnequippable,
     ItemAlreadyEquipped,
-    UnableToEquip,
 )
-
 from utils.command_helpers import get_author_player
 
 

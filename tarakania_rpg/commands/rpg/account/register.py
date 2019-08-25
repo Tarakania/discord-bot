@@ -1,9 +1,8 @@
 from handler import Context, Arguments, CommandResult
-
-from rpg.player import Player, NickOrIDUsed
-from rpg.rpg_object import UnknownObject
 from rpg.race import Race
 from rpg.class_ import Class
+from rpg.player import Player, NickOrIDUsed
+from rpg.rpg_object import UnknownObject
 
 
 async def run(ctx: Context, args: Arguments) -> CommandResult:

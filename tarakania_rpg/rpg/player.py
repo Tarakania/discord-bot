@@ -1,17 +1,15 @@
 from __future__ import annotations
 
+from typing import Any, Dict, List, Union, Iterator, Optional
 from contextlib import suppress
-from typing import List, Dict, Any, Optional, Iterator, Union
 
 import asyncpg
 
-from rpg.items import Item, Equippable, Weapon, Armor
 from rpg.race import Race
+from utils.xp import level_to_xp, xp_to_level
+from rpg.items import Item, Armor, Weapon, Equippable
 from rpg.class_ import Class
 from rpg.location import Location
-
-from utils.xp import xp_to_level, level_to_xp
-
 
 BASE_STAT_VALUE = 10
 BASE_ACTION_PONTS_VALUE = 4

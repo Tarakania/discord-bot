@@ -1,13 +1,12 @@
 from __future__ import annotations
 
+from typing import Any, Dict, List, Type, Tuple, TypeVar, Iterator
 from logging import getLogger
 from contextlib import suppress
-from typing import Any, Dict, List, Type, Iterator, TypeVar, Tuple
 
 from yaml import safe_load
 
 from constants import DATA_DIR
-
 
 log = getLogger("object_loader")
 

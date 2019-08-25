@@ -1,7 +1,6 @@
 from handler import Context, Arguments, CommandResult
-
-from utils.command_helpers import get_author_player
 from utils.confirmations import request_confirmation
+from utils.command_helpers import get_author_player
 
 
 async def run(ctx: Context, args: Arguments) -> CommandResult:

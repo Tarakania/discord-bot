@@ -9,8 +9,8 @@ import yaml
 import discord
 
 from .context import Context
-from .converters import Converter
 from .arguments import Arguments
+from .converters import Converter
 
 if typing.TYPE_CHECKING:
     from bot import TarakaniaRPG

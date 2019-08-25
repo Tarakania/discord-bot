@@ -1,6 +1,6 @@
-from contextlib import suppress
+from typing import Set, Dict, Union, Iterable, Optional
 from asyncio import TimeoutError
-from typing import Optional, Iterable, Union, Dict, Set
+from contextlib import suppress
 
 import discord
 

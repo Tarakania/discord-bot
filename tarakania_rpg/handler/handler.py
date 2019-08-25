@@ -3,16 +3,17 @@ import re
 import traceback
 
 from shlex import split
+from typing import TYPE_CHECKING, Set, Dict, Tuple, Pattern, Iterator, Optional
 from logging import getLogger
-from typing import TYPE_CHECKING, Dict, Optional, Tuple, Set, Pattern, Iterator
 
 import discord
+
+from constants import COMMANDS_DIR
 
 from .command import Command, CommandResult, StopCommandExecution
 from .context import Context
 from .arguments import Arguments
 from .exceptions import ParserError
-from constants import COMMANDS_DIR
 
 if TYPE_CHECKING:
     from bot import TarakaniaRPG

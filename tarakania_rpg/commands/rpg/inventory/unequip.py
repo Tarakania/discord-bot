@@ -1,5 +1,4 @@
 from handler import Context, Arguments, CommandResult
-
 from rpg.player import ItemAlreadyUnequipped
 from utils.command_helpers import get_author_player
 

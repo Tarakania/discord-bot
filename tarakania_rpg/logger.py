@@ -4,7 +4,6 @@ from typing import Any, Dict
 
 from cli import args
 
-
 LEVEL_TO_COLOR_VALUE = {
     "INFO": "32",  # green
     "WARNING": "33",  # yellow

@@ -1,16 +1,15 @@
 import sys
 import logging
+import argparse
 
 from typing import Any, Dict
 
 import git
 import discord
-import argparse
 
+from sql import create_pg_connection
 from updater import start_updater
 from handler.handler import Handler
-from sql import create_pg_connection
-
 
 TARAKANIA_RPG_ASCII_ART = r""" _____                _               _           __    ___  ___
 /__   \__ _ _ __ __ _| | ____ _ _ __ (_) __ _    /__\  / _ \/ _ \

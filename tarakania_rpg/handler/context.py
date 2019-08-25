@@ -1,7 +1,6 @@
-from typing import Any, Union, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Union, Optional
 
 import discord
-
 
 if TYPE_CHECKING:
     from bot import TarakaniaRPG

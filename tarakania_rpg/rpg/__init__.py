@@ -1,5 +1,5 @@
-from .items import load_all_items
 from .race import Race
+from .items import load_all_items
 from .class_ import Class
 from .location import Location
 

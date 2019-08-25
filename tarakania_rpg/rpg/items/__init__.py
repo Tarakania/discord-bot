@@ -1,16 +1,15 @@
-from .item import Item
-from .equippable import Equippable
+from .item import Item  # isort:skip
+from .equippable import Equippable  # isort:skip
 
-from .alchemy_ingredient import AlchemyIngredient
 from .ammo import Ammo
-from .armor import Armor
 from .book import Book
-from .craft_ingredient import CraftIngredient
-from .scroll import Scroll
 from .tool import Tool
+from .armor import Armor
+from .scroll import Scroll
 from .weapon import Weapon
-
 from .consumables.food import Food
+from .craft_ingredient import CraftIngredient
+from .alchemy_ingredient import AlchemyIngredient
 from .consumables.potion import Potion
 
 __all__ = (
