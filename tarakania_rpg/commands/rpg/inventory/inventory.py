@@ -1,17 +1,17 @@
+from typing import Dict
+
 from handler import Context, Arguments, CommandResult
 
+from rpg.items import Item
 from utils.formatting import codeblock
 from utils.command_helpers import get_author_player
-from typing import Dict
-from rpg.items import Item
 
 
-async def run(
-    ctx: Context, args: Arguments, counts: Dict[Item, int]
-) -> CommandResult:
+async def run(ctx: Context, args: Arguments) -> CommandResult:
     player = await get_author_player(ctx)
 
     if player.inventory.size:
+        counts: Dict[Item, int] = {}
         for item in player.inventory:
             counts[item] = counts.get(item, 0) + 1
 

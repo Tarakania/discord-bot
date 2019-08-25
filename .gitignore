@@ -4,7 +4,7 @@
 *.yml
 
 !.pre-commit-config.yaml
-!.travis.yaml
+!.travis.yml
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
