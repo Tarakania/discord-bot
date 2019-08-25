@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Dict, Optional, Tuple, Set, Pattern, Iterator
 
 import discord
 
-from .command import Command, CommandResult
+from .command import Command, CommandResult, StopCommandExecution
 from .context import Context
 from .arguments import Arguments
 from .exceptions import ParserError
@@ -214,7 +214,9 @@ class Handler:
         )
 
         try:
-            await self.process_response(await command.run(ctx, args), ctx)
+            response = await command.run(ctx, args)
+        except StopCommandExecution as e:
+            response = str(e)
         except Exception:
             log.exception(f"Error calling command {command.name}")
 
@@ -225,6 +227,8 @@ class Handler:
                 ),
                 ctx,
             )
+
+        await self.process_response(response, ctx)
 
     async def run_command_checks(self, ctx: Context) -> None:
         if ctx.command.guild_only and ctx.guild is None:

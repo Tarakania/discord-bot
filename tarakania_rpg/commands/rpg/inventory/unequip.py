@@ -1,13 +1,11 @@
 from handler import Context, Arguments, CommandResult
 
-from rpg.player import Player, UnknownPlayer, ItemAlreadyUnequipped
+from rpg.player import ItemAlreadyUnequipped
+from utils.command_helpers import get_author_player
 
 
 async def run(ctx: Context, args: Arguments) -> CommandResult:
-    try:
-        player = await Player.from_id(ctx.author.id, ctx.bot.pg)
-    except UnknownPlayer:
-        return "У вас нет персонажа"
+    player = await get_author_player(ctx)
 
     try:
         await player.unequip_item(args[0], ctx.bot.pg)

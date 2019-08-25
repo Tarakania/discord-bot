@@ -1,6 +1,6 @@
 from handler import Context, Arguments, CommandResult
 
-from rpg.player import Player, UnknownPlayer
+from utils.command_helpers import get_author_player
 from utils.confirmations import request_phrase_confirmation
 
 
@@ -8,10 +8,7 @@ CONFIRMATION_PHRASE = "Подтверждаю"
 
 
 async def run(ctx: Context, args: Arguments) -> CommandResult:
-    try:
-        player = await Player.from_id(ctx.author.id, ctx.bot.pg)
-    except UnknownPlayer:
-        return "У вас нет персонажа"
+    player = await get_author_player(ctx)
 
     confirmation_request = await ctx.send(
         f"Вы действительно хотите удалить персонажа **{player}**?\n"

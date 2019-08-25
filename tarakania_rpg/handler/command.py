@@ -20,6 +20,10 @@ log = getLogger(__name__)
 
 CommandResult = typing.Union[str, discord.Message, None]
 
+class StopCommandExecution(Exception):
+    """Raise to stop command execution and return."""
+
+
 
 class Command:
     def __init__(self, bot: "TarakaniaRPG", command_path: str) -> None:

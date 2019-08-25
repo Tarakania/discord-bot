@@ -1,14 +1,11 @@
 from handler import Context, Arguments, CommandResult
 
-from rpg.player import Player, UnknownPlayer
+from utils.command_helpers import get_author_player
 from utils.confirmations import request_confirmation
 
 
 async def run(ctx: Context, args: Arguments) -> CommandResult:
-    try:
-        player = await Player.from_id(ctx.author.id, ctx.bot.pg)
-    except UnknownPlayer:
-        return "У вас нет персонажа"
+    player = await get_author_player(ctx)
 
     item = args[0]
     player2 = args[1]
@@ -39,7 +36,7 @@ async def run(ctx: Context, args: Arguments) -> CommandResult:
 
     return await confirmation_request.edit(
         content=(
-            f"**{ctx.author}** передал **{item}** **{player2}**"
+            f"**{player}** передал **{item}** **{player2}**"
             f"{' из экипировки' if from_equipment else ''}"
         )
     )

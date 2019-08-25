@@ -1,14 +1,11 @@
 from handler import Context, Arguments, CommandResult
 
-from rpg.player import Player, UnknownPlayer
 from utils.formatting import codeblock
+from utils.command_helpers import get_author_player
 
 
 async def run(ctx: Context, args: Arguments) -> CommandResult:
-    try:
-        player = await Player.from_id(ctx.author.id, ctx.bot.pg)
-    except UnknownPlayer:
-        return "У вас нет персонажа"
+    player = await get_author_player(ctx)
 
     if player.inventory.size:
         inventory = "\n".join(str(i) for i in player.inventory)
