@@ -5,3 +5,6 @@ arguments:
     type: item
   - name: ник
     type: player
+  - name: количество
+    type: int
+    optional: true
