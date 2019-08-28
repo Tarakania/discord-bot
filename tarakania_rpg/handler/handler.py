@@ -221,12 +221,9 @@ class Handler:
         except Exception:
             log.exception(f"Error calling command {command.name}")
 
-            await self.process_response(
-                (
-                    f"Ошибка при выполнении команды **{command.name}**:\n"
-                    f"```{traceback.format_exc(3)}```"
-                ),
-                ctx,
+            response = (
+                f"Ошибка при выполнении команды **{command.name}**:\n"
+                f"```{traceback.format_exc(3)}```"
             )
 
         await self.process_response(response, ctx)

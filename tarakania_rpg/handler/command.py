@@ -65,6 +65,9 @@ class Command:
         with open(configuration_path, encoding="utf8") as f:
             data = yaml.load(f, Loader=yaml.SafeLoader)
 
+        if data is None:  # empty file
+            data = {}
+
         aliases = data.get("aliases", ())
         if isinstance(aliases, str):  # 1 alias
             self.aliases = (self.name, aliases)
