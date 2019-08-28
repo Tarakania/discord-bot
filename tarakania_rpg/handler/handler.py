@@ -4,6 +4,7 @@ import traceback
 
 from shlex import split
 from typing import TYPE_CHECKING, Set, Dict, Tuple, Pattern, Iterator, Optional
+from asyncio import CancelledError
 from logging import getLogger
 
 import discord
@@ -183,7 +184,7 @@ class Handler:
         if used_prefix is None or used_alias is None:
             return
 
-        command = self._commands.get(used_alias)
+        command = self._commands.get(used_alias.lower())
         if command is None:
             return
 
@@ -218,6 +219,11 @@ class Handler:
             response = await command.run(ctx, args)
         except StopCommandExecution as e:
             response = str(e)
+        except CancelledError:
+            log.debug(
+                f"Cancelled execution of {command.name} (CancelledError)"
+            )
+            return
         except Exception:
             log.exception(f"Error calling command {command.name}")
 
