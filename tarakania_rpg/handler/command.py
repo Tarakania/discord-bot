@@ -123,7 +123,13 @@ class Command:
 
         usage = await self.get_usage(ctx)
 
-        return f"```\n" f"{usage}\n\n" f"{self.short_help}```"
+        help_text = f"{usage}"
+        if self.short_help:
+            help_text += f"\n\n{self.short_help}"
+        if self.long_help:
+            help_text += f"\n\n{self.long_help}"
+
+        return help_text
 
     async def init(self) -> None:
         if self._init_fn is None:
