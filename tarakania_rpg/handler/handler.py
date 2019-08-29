@@ -78,9 +78,9 @@ class Handler:
                 raise
 
             return None
-        finally:
-            for alias in old_aliases:
-                del self._commands[alias]
+
+        for alias in old_aliases:
+            del self._commands[alias]
 
         for alias in command.aliases:
             self._commands[alias] = command
