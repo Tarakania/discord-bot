@@ -212,7 +212,8 @@ class Handler:
             )
 
         log.debug(
-            f"Invoking command {command.name} from {ctx.author.id} in channel {ctx.channel.id}"
+            f"{command.name} <- {ctx.author.id}"
+            f"[{f'{ctx.guild.id}-{ctx.channel.id}' if ctx.guild else 'DM'}]"
         )
 
         try:

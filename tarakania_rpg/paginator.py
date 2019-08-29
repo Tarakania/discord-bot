@@ -120,15 +120,9 @@ class _PaginatorBase:
             self.stop()
 
     async def _clear_reactions(self) -> None:
-        me = (
-            self._message.channel.me
-            if self._message.channel.guild is None
-            else self._message.channel.guild.me
-        )
-
         try:
             for emoji in self._events.keys():
-                await self._message.remove_reaction(emoji, me)
+                await self._message.remove_reaction(emoji, self._ctx.me)
         except discord.HTTPException:
             return
 
@@ -141,6 +135,8 @@ class _PaginatorBase:
                 and event.message_id == self._message.id
                 and str(event.emoji) in self._events
             )
+
+        log.debug(f"{self}: listening events")
 
         while not self._stopped:
             # TODO: listen for websocket instead of 2 events?
@@ -177,7 +173,11 @@ class _PaginatorBase:
 
     @staticmethod
     def _check_permissions(channel: discord.TextChannel) -> None:
-        me = channel.me if channel.guild is None else channel.guild.me
+        me = (
+            channel.me
+            if isinstance(channel, discord.DMChannel)
+            else channel.guild.me
+        )
         perms = me.permissions_in(channel)
 
         for permission_name in ("add_reactions", "read_message_history"):
@@ -192,7 +192,7 @@ class _PaginatorBase:
         if self._stop_task is not None:
             self._stop_task.cancel()
 
-        log.debug(f"{self._message.id}: stopping after {delay} seconds")
+        log.debug(f"{self}: scheduled stop in {round(delay, 1)} seconds")
 
         self._stop_task = self._ctx.bot.loop.call_later(delay, self.stop)
 
@@ -230,17 +230,19 @@ class _PaginatorBase:
             kwargs = self._make_edit_kwargs(await self._switch_page(0, 0))
             message = await ctx.send(**kwargs)
 
-        if not self.paginatable:
-            return message
-
-        self._check_permissions(message.channel)
-
         if user is None:
             user = ctx.author
 
         self._ctx = ctx
         self._user = user
         self._message = message
+
+        if not self.paginatable:
+            log.debug(f"{self}: not paginatable, exiting")
+
+            return message
+
+        self._check_permissions(message.channel)
 
         await self._init_reactions()
 
@@ -249,6 +251,8 @@ class _PaginatorBase:
         self._schedule_stop()
 
         async for event in self._listen_events(time_remaining):
+            log.debug(f"{self}: {event.emoji} <- {event.user_id}")
+
             try:
                 page = await self._events[str(event.emoji)](self)
             except NoPageUpdate:
@@ -270,7 +274,7 @@ class _PaginatorBase:
     def stop(self) -> None:
         """Stop paginator."""
 
-        log.debug(f"{self._message.id}: stopping")
+        log.debug(f"{self}: stopping")
 
         self._stopped = True
 
@@ -280,11 +284,15 @@ class _PaginatorBase:
     async def _switch_page(self, old_index: int, new_index: int) -> PageType:
         """Get page from cache or use callback to generate it."""
 
+        log.debug(f"{self}: {old_index} -> {new_index}")
+
         page = None
         if self._cache_pages:
             page = self._pages[new_index]
 
         if page is None:
+            log.debug(f"{self}: generating page {new_index}")
+
             page = await self._page_switch_callback(old_index, new_index)
 
         if self._cache_pages:
@@ -302,6 +310,12 @@ class _PaginatorBase:
     @property
     def index(self) -> int:
         return self._index
+
+    def __str__(self) -> str:
+        if not hasattr(self, "_message"):
+            return "?-?"
+
+        return f"{self._message.channel.id}-{self._message.id}"
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} size=self.size >"
