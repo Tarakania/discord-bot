@@ -16,3 +16,6 @@ redis:
   host: ""
   password: ""
   port: "6379"
+updater:
+  cert-chain-path: ""
+  cert-privkey-path: ""

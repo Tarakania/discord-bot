@@ -1,3 +1,4 @@
+import ssl
 import hmac
 import asyncio
 import logging
@@ -140,7 +141,17 @@ async def start_updater(bot: "TarakaniaRPG") -> None:
     app["runner"] = runner
 
     await runner.setup()
-    site = web.TCPSite(runner, args.wh_host, args.wh_port)
+
+    ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+    updater_section = app["config"]["updater"]
+    ssl_context.load_cert_chain(
+        updater_section["cert-chain-path"],
+        updater_section["cert-privkey-path"],
+    )
+
+    site = web.TCPSite(
+        runner, args.wh_host, args.wh_port, ssl_context=ssl_context
+    )
     await site.start()
 
     log.info(f"Listening for github events on port {args.wh_port}")

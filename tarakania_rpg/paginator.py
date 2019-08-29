@@ -470,10 +470,8 @@ class RawPagePaginator(_PaginatorBase):
             ),
             color=discord.Color.purple(),
         )
-        e.set_author(
-            name="Справка по использованию пагинатора",
-            icon_url=self._ctx.me.avatar_url,
-        )
+        e.set_author(name="Справка по использованию пагинатора")
+
         return e
 
 
