@@ -109,10 +109,7 @@ def setup_logger(logging_config: Dict[str, Any]) -> None:
         },
         "root": {
             "level": args.verbose,
-            "handlers": [
-                "console" if args.no_colors else "colorful_console",
-                "file",
-            ],
+            "handlers": ["console" if args.no_colors else "colorful_console", "file"],
         },
         "disable_existing_loggers": False,
     }

@@ -22,8 +22,7 @@ async def run(ctx: Context, args: Arguments) -> CommandResult:
     lines = [f"{c.name:<12}: {c.short_help}" for c in commands]
 
     pages = [
-        lines[i : i + LINES_PER_PAGE]
-        for i in range(0, len(lines), LINES_PER_PAGE)
+        lines[i : i + LINES_PER_PAGE] for i in range(0, len(lines), LINES_PER_PAGE)
     ]
 
     p = RawPagePaginator(len(pages))

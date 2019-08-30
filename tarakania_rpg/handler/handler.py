@@ -21,9 +21,7 @@ if TYPE_CHECKING:
 
 log = getLogger(__name__)
 
-PREFIX_REGEX = (
-    r"^(?P<prefix>({prefixes}))\s*(?P<command>\w+)(?:\s+(?P<arguments>.+))?$"
-)
+PREFIX_REGEX = r"^(?P<prefix>({prefixes}))\s*(?P<command>\w+)(?:\s+(?P<arguments>.+))?$"
 
 
 class CommandCheckError(Exception):
@@ -114,8 +112,7 @@ class Handler:
         )
 
         self._prefixes_regex = re.compile(
-            PREFIX_REGEX.format(prefixes="|".join(prefixes)),
-            re.IGNORECASE | re.UNICODE,
+            PREFIX_REGEX.format(prefixes="|".join(prefixes)), re.IGNORECASE | re.UNICODE
         )
         self._dm_prefixes_regex = re.compile(
             PREFIX_REGEX.format(prefixes="|".join(prefixes + ("",))),
@@ -158,15 +155,11 @@ class Handler:
 
         lower_content = content.lower()
         if lower_content.startswith(custom_prefix):
-            command_and_arguments = content[len(custom_prefix) :].split(
-                maxsplit=1
-            )
+            command_and_arguments = content[len(custom_prefix) :].split(maxsplit=1)
             return (
                 custom_prefix,
                 command_and_arguments[0],
-                command_and_arguments[1]
-                if len(command_and_arguments) == 2
-                else "",
+                command_and_arguments[1] if len(command_and_arguments) == 2 else "",
             )
 
         return None, None, content
@@ -192,9 +185,7 @@ class Handler:
             splitted_args = split(arguments)
         except ValueError:
             # TODO: better help message
-            await msg.channel.send(
-                "Ошибка разделения аргументов: открытая ковычка"
-            )
+            await msg.channel.send("Ошибка разделения аргументов: открытая ковычка")
 
             return
 
@@ -221,9 +212,7 @@ class Handler:
         except StopCommandExecution as e:
             response = str(e)
         except CancelledError:
-            log.debug(
-                f"Cancelled execution of {command.name} (CancelledError)"
-            )
+            log.debug(f"Cancelled execution of {command.name} (CancelledError)")
             return
         except Exception:
             log.exception(f"Error calling command {command.name}")
@@ -241,17 +230,12 @@ class Handler:
                 "Данную команду можно использовать только на сервере"
             )
 
-        if (
-            ctx.command.owner_only
-            and ctx.author.id not in self.bot.config["owners"]
-        ):
+        if ctx.command.owner_only and ctx.author.id not in self.bot.config["owners"]:
             raise CommandCheckError(
                 "Данную команду могут использовать только владельцы бота"
             )
 
-    async def process_response(
-        self, response: CommandResult, ctx: Context
-    ) -> None:
+    async def process_response(self, response: CommandResult, ctx: Context) -> None:
         if isinstance(response, str):
             await ctx.send(response)
         elif isinstance(response, discord.Message):
@@ -267,6 +251,4 @@ class Handler:
         return self._commands.get(name)
 
     def get_all_commands(self, with_hidden: bool = False) -> Set[Command]:
-        return set(
-            c for c in self._commands.values() if not c.hidden or with_hidden
-        )
+        return set(c for c in self._commands.values() if not c.hidden or with_hidden)

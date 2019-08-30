@@ -12,13 +12,7 @@ from .craft_ingredient import CraftIngredient
 from .alchemy_ingredient import AlchemyIngredient
 from .consumables.potion import Potion
 
-__all__ = (
-    "Item",
-    "UnknownItem",
-    "Equippable",
-    "load_all_items",
-    "reload_all_items",
-)
+__all__ = ("Item", "UnknownItem", "Equippable", "load_all_items", "reload_all_items")
 
 _ALL_ITEM_TYPES = (
     AlchemyIngredient,

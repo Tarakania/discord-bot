@@ -180,16 +180,12 @@ class PlayerEquipmnent:
                 raise TypeError(f"{instance} is not an instance of {cls}")
 
         if kwargs:
-            raise ValueError(
-                f"Unknown argument(s) passed: {tuple(kwargs.keys())}"
-            )
+            raise ValueError(f"Unknown argument(s) passed: {tuple(kwargs.keys())}")
 
         for name, instance in checked_kwargs.items():
             setattr(self, name, instance)
 
-    async def from_id(
-        cls, discord_id: int, pool: asyncpg.Pool
-    ) -> PlayerEquipmnent:
+    async def from_id(cls, discord_id: int, pool: asyncpg.Pool) -> PlayerEquipmnent:
         data = await pool.fetchrow(
             "SELECT * FROM equipment WHERE discord_id = $1", discord_id
         )
@@ -429,18 +425,12 @@ class PlayerStats:
     def _calculate_mana(self) -> int:
         self._calculate_modifiers()
 
-        return (
-            self.intelligence * INTELLIGENCE_TO_MANA_RATIO
-            + self._modifiers["mana"]
-        )
+        return self.intelligence * INTELLIGENCE_TO_MANA_RATIO + self._modifiers["mana"]
 
     def _calculate_health(self) -> int:
         self._calculate_modifiers()
 
-        return (
-            self.vitality * VITALITY_TO_HEALTH_RATIO
-            + self._modifiers["health"]
-        )
+        return self.vitality * VITALITY_TO_HEALTH_RATIO + self._modifiers["health"]
 
     def _calculate_action_points(self) -> int:
         self._calculate_modifiers()
@@ -606,17 +596,14 @@ class Player:
 
     async def delete(self, conn: asyncpg.Connection) -> None:
         deleted = await conn.fetchrow(
-            "DELETE FROM players WHERE discord_id = $1 RETURNING true",
-            self.discord_id,
+            "DELETE FROM players WHERE discord_id = $1 RETURNING true", self.discord_id
         )
 
         if not deleted:
             raise UnknownPlayer
 
     @classmethod
-    async def from_id(
-        cls, discord_id: int, conn: asyncpg.Connection
-    ) -> Player:
+    async def from_id(cls, discord_id: int, conn: asyncpg.Connection) -> Player:
         player_data = await conn.fetchrow(
             "SELECT * FROM players WHERE discord_id = $1", discord_id
         )
@@ -762,4 +749,6 @@ class Player:
         return self.nick
 
     def __repr__(self) -> str:
-        return f"<Player discord_id={self.discord_id} nick={self.nick} stats={self.stats}>"
+        return (
+            f"<Player discord_id={self.discord_id} nick={self.nick} stats={self.stats}>"
+        )

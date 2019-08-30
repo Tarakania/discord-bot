@@ -10,8 +10,7 @@ async def run(ctx: Context, args: Arguments) -> CommandResult:
     request_complete_time = time()
 
     receive_diff = (
-        receive_time
-        - (ctx.message.edited_at or ctx.message.created_at).timestamp()
+        receive_time - (ctx.message.edited_at or ctx.message.created_at).timestamp()
     )
 
     send_diff = request_complete_time - receive_time

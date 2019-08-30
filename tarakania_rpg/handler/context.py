@@ -55,13 +55,13 @@ class Context:
     @property
     def local_prefix(self) -> str:
         if self.guild is not None:
-            guild_prefix = self.bot._handler._custom_prefixes.get(
-                self.guild.id
-            )
+            guild_prefix = self.bot._handler._custom_prefixes.get(self.guild.id)
             if guild_prefix is not None:
                 return guild_prefix
 
         return self.bot.config["default-prefix"]
 
     def __repr__(self) -> str:
-        return f"<Context prefix={self.prefix} alias={self.alias} message={self.message}>"
+        return (
+            f"<Context prefix={self.prefix} alias={self.alias} message={self.message}>"
+        )

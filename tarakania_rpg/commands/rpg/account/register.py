@@ -22,9 +22,7 @@ async def run(ctx: Context, args: Arguments) -> CommandResult:
         return f"Выберите название класса из: **{', '.join(i.name for i in Class.all_instances())}**"
 
     try:
-        await Player.create(
-            ctx.bot.pg, ctx.author.id, nick, race.id, class_.id
-        )
+        await Player.create(ctx.bot.pg, ctx.author.id, nick, race.id, class_.id)
     except NickOrIDUsed:
         return "Персонаж с таким именем уже существует или у вас уже есть персонаж"
 

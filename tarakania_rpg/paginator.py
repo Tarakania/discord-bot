@@ -3,16 +3,7 @@ from __future__ import annotations
 import asyncio
 
 from time import time
-from typing import (
-    Any,
-    Dict,
-    List,
-    Union,
-    Callable,
-    Optional,
-    Awaitable,
-    AsyncIterator,
-)
+from typing import Any, Dict, List, Union, Callable, Optional, Awaitable, AsyncIterator
 from logging import getLogger
 from contextlib import suppress
 from concurrent.futures import FIRST_COMPLETED
@@ -173,18 +164,12 @@ class _PaginatorBase:
 
     @staticmethod
     def _check_permissions(channel: discord.TextChannel) -> None:
-        me = (
-            channel.me
-            if isinstance(channel, discord.DMChannel)
-            else channel.guild.me
-        )
+        me = channel.me if isinstance(channel, discord.DMChannel) else channel.guild.me
         perms = me.permissions_in(channel)
 
         for permission_name in ("add_reactions", "read_message_history"):
             if not getattr(perms, permission_name):
-                raise StopCommandExecution(
-                    f"У меня нет разрешения {permission_name}"
-                )
+                raise StopCommandExecution(f"У меня нет разрешения {permission_name}")
 
     def _schedule_stop(self, delay: Optional[float] = None) -> None:
         delay = self._timeout if delay is None else delay
@@ -215,9 +200,7 @@ class _PaginatorBase:
         ctx: Context,
         message: Optional[discord.Message] = None,
         user: Optional[discord.User] = None,
-        page_switch: Optional[
-            Callable[[int, int], Awaitable[PageType]]
-        ] = None,
+        page_switch: Optional[Callable[[int, int], Awaitable[PageType]]] = None,
     ) -> discord.Message:
         """Run paginator."""
 
@@ -472,9 +455,7 @@ class RawPagePaginator(_PaginatorBase):
                 "будет реагировать на нажатия.\n\n"
                 "**Список реакций и их действий приведён ниже:**\n"
             )
-            + "\n".join(
-                f"{emote}: {fn.__doc__}" for emote, fn in self._events.items()
-            ),
+            + "\n".join(f"{emote}: {fn.__doc__}" for emote, fn in self._events.items()),
             color=discord.Color.purple(),
         )
         e.set_author(name="Справка по использованию пагинатора")

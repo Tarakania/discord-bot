@@ -20,9 +20,7 @@ class UnknownObject(Exception):
 
 
 class _RPGOBjectMeta(type):
-    def __new__(
-        mcls, name: str, bases: Tuple[type, ...], dct: Dict[str, Any]
-    ) -> type:
+    def __new__(mcls, name: str, bases: Tuple[type, ...], dct: Dict[str, Any]) -> type:
         cls = super().__new__(mcls, name, bases, dct)
 
         setattr(cls, "_storage_by_id", {})
@@ -67,8 +65,7 @@ class RPGObject(metaclass=_RPGOBjectMeta):
     @staticmethod
     def _read_objects_from_file(cls: Type[TRPGObject]) -> Dict[int, Any]:
         with open(
-            f"{DATA_DIR}/rpg/{cls.config_folder}{cls.config_filename}",
-            encoding="utf8",
+            f"{DATA_DIR}/rpg/{cls.config_folder}{cls.config_filename}", encoding="utf8"
         ) as f:
             data = safe_load(f)
 

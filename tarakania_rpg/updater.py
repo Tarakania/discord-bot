@@ -62,9 +62,7 @@ async def git_pull() -> None:
     git_log.info("Pull completed")
 
 
-async def notify_restart_started(
-    bot: "TarakaniaRPG", commits_count: int = -1
-) -> None:
+async def notify_restart_started(bot: "TarakaniaRPG", commits_count: int = -1) -> None:
     if not args.enable_notifications:
         return
 
@@ -79,9 +77,7 @@ async def notify_restart_started(
     try:
         await update_channel.send(shutdown_message)
     except Exception as e:
-        log.warning(
-            f"Failed to deliver notification: {shutdown_message}. Error: {e}"
-        )
+        log.warning(f"Failed to deliver notification: {shutdown_message}. Error: {e}")
 
 
 async def notify_boot_completed(bot: "TarakaniaRPG") -> None:
@@ -98,9 +94,7 @@ async def notify_boot_completed(bot: "TarakaniaRPG") -> None:
     try:
         await update_channel.send(boot_message)
     except Exception as e:
-        log.warning(
-            f"Failed to deliver notification: {boot_message}. Error: {e}"
-        )
+        log.warning(f"Failed to deliver notification: {boot_message}. Error: {e}")
 
 
 async def wait_clean_exit(app: web.Application) -> None:
@@ -133,9 +127,7 @@ async def start_updater(bot: "TarakaniaRPG") -> None:
     app["bot"] = bot
     app["config"] = bot.config
 
-    app.add_routes(
-        [web.post("/tarakania-rpg-bot-webhook", update_webhook_endpoint)]
-    )
+    app.add_routes([web.post("/tarakania-rpg-bot-webhook", update_webhook_endpoint)])
 
     runner = web.AppRunner(app)
     app["runner"] = runner
@@ -145,13 +137,10 @@ async def start_updater(bot: "TarakaniaRPG") -> None:
     ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
     updater_section = app["config"]["updater"]
     ssl_context.load_cert_chain(
-        updater_section["cert-chain-path"],
-        updater_section["cert-privkey-path"],
+        updater_section["cert-chain-path"], updater_section["cert-privkey-path"]
     )
 
-    site = web.TCPSite(
-        runner, args.wh_host, args.wh_port, ssl_context=ssl_context
-    )
+    site = web.TCPSite(runner, args.wh_host, args.wh_port, ssl_context=ssl_context)
     await site.start()
 
     log.info(f"Listening for github events on port {args.wh_port}")

@@ -21,9 +21,7 @@ class Arguments:
         actual_values = []
         actual_converters: List[Converter] = []
 
-        for i, (value, converter) in enumerate(
-            zip_longest(self._args, converters)
-        ):
+        for i, (value, converter) in enumerate(zip_longest(self._args, converters)):
             if value is None:  # arguments exausted
                 if not converter.optional:
                     raise TooFewArguments
@@ -79,9 +77,7 @@ class Arguments:
         self, index: Union[int, slice]
     ) -> Union[Any, List[Any]]:
         if len(self._args) != len(self._converted):
-            raise RuntimeError(
-                "Bad number of converted values. Was 'convert' called?"
-            )
+            raise RuntimeError("Bad number of converted values. Was 'convert' called?")
 
         if isinstance(index, int):
             return self._converted[index]

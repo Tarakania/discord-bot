@@ -23,10 +23,7 @@ log = logging.getLogger(__name__)
 
 class TarakaniaRPG(discord.AutoShardedClient):
     def __init__(
-        self,
-        cli_args: argparse.Namespace,
-        config: Dict[str, Any],
-        **kwargs: Any,
+        self, cli_args: argparse.Namespace, config: Dict[str, Any], **kwargs: Any
     ):
         self.args = cli_args
 
@@ -63,9 +60,7 @@ class TarakaniaRPG(discord.AutoShardedClient):
         await self._handler.prepare_prefixes()
         await self._handler.load_all_commands()
 
-        log.info(
-            f"Running in {'production' if self.args.production else 'debug'} mode"
-        )
+        log.info(f"Running in {'production' if self.args.production else 'debug'} mode")
 
         for line in TARAKANIA_RPG_ASCII_ART.split("\n"):
             log.info(line)

@@ -33,9 +33,7 @@ async def _reaction_confirmation(
 
     confirmed = None
 
-    def check(
-        r: discord.Reaction, u: Union[discord.Member, discord.User]
-    ) -> bool:
+    def check(r: discord.Reaction, u: Union[discord.Member, discord.User]) -> bool:
         if u != user or r.message.id != message.id:
             return False
 
@@ -53,9 +51,7 @@ async def _reaction_confirmation(
 
         return False
 
-    async def do_cleanup(
-        user_reaction: Optional[discord.Reaction] = None
-    ) -> None:
+    async def do_cleanup(user_reaction: Optional[discord.Reaction] = None) -> None:
         try:
             for emoji in all_emojis:
                 await message.remove_reaction(emoji, ctx.me)
@@ -114,9 +110,7 @@ async def _text_confirmation(
         return False
 
     try:
-        user_message = await ctx.bot.wait_for(
-            "message", timeout=timeout, check=check
-        )
+        user_message = await ctx.bot.wait_for("message", timeout=timeout, check=check)
     except TimeoutError:
         return None
 
@@ -213,9 +207,7 @@ async def request_phrase_confirmation(
         )
 
     try:
-        user_message = await ctx.bot.wait_for(
-            "message", timeout=timeout, check=check
-        )
+        user_message = await ctx.bot.wait_for("message", timeout=timeout, check=check)
     except TimeoutError:
         return None
 

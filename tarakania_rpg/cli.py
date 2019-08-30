@@ -78,9 +78,7 @@ argparser.add_argument(
     "--no-colors", action="store_true", help="Disables console colors"
 )
 
-argparser.add_argument(
-    "--test-logger", action="store_true", help="Perform logger test"
-)
+argparser.add_argument("--test-logger", action="store_true", help="Perform logger test")
 
 args = argparser.parse_args()
 
