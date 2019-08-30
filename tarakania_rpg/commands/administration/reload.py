@@ -11,9 +11,9 @@ async def run(ctx: Context, args: Arguments) -> CommandResult:
                 args[0].name, raise_on_error=True
             )
         except Exception as e:
-            await ctx.send(
+            return (
                 f"Ошибка при перезагрузке **{command.name}**: **{e.__class__.__name__}: {e}**\n"
-                f"{codeblock(traceback.format_exc())}"
+                f"{codeblock(traceback.format_exc(limit=6))}"
             )
 
         assert reloaded is not None
