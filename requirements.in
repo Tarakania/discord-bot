@@ -4,3 +4,4 @@ asyncpg
 pyyaml>=4.2b1
 GitPython
 humanize
+sentry-sdk
