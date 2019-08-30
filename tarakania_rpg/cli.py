@@ -42,6 +42,11 @@ argparser.add_argument(
     action="store_true",
     help="Enables updater. Defaults to false in debug mode. Otherwise true",
 )
+argparser.add_argument(
+    "--enable-sentry",
+    action="store_true",
+    help="Enables sentry. Defaults to false in debug mode. Otherwise true",
+)
 
 
 def _verbosity_to_logging_level(string: str) -> int:
@@ -87,3 +92,4 @@ args.verbose = _verbosity_to_logging_level(args.verbose)
 if args.production:
     args.enable_notifications = True
     args.enable_updater = True
+    args.enable_sentry = True

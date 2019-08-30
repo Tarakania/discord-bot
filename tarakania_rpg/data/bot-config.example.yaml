@@ -19,3 +19,5 @@ redis:
 updater:
   cert-chain-path: ""
   cert-privkey-path: ""
+sentry:
+  dsn: ""
