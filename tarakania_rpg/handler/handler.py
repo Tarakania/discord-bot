@@ -9,6 +9,8 @@ from logging import getLogger
 
 import discord
 
+from sentry_sdk import configure_scope
+
 from constants import COMMANDS_DIR
 
 from .command import Command, CommandResult, StopCommandExecution
@@ -188,6 +190,15 @@ class Handler:
             await msg.channel.send("Ошибка разделения аргументов: открытая ковычка")
 
             return
+
+        with configure_scope() as scope:
+            scope.user = {"id": msg.author.id, "tag": str(msg.author)}
+            if msg.guild is None:
+                scope.set_tag("channel_dm", True)
+            else:
+                scope.set_tag("channel_dm", False)
+                scope.set_tag("guild_id", msg.guild.id)
+                scope.set_tag("channel_id", msg.channel.id)
 
         args = Arguments(splitted_args)
         ctx = Context(self.bot, msg, command, used_prefix, used_alias)

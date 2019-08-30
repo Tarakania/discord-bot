@@ -106,6 +106,11 @@ def setup_logger(logging_config: Dict[str, Any]) -> None:
                 "handlers": ["console", "file"],
                 "propagate": False,
             },
+            "sentry_sdk": {
+                "level": "DEBUG",
+                "handlers": ["console", "file"],
+                "propagate": False,
+            },
         },
         "root": {
             "level": args.verbose,

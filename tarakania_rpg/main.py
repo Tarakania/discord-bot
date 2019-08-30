@@ -11,6 +11,8 @@ from logger import setup_logger
 if __name__ == "__main__":
     config = get_bot_config(args.config_file)
 
+    setup_logger(config["logging"])
+
     if args.enable_sentry:
         sentry_sdk.init(
             dsn=config["sentry"]["dsn"],
@@ -18,7 +20,6 @@ if __name__ == "__main__":
             debug=not args.production,
         )
 
-    setup_logger(config["logging"])
     load_objects()
 
     bot = TarakaniaRPG(args, config)
