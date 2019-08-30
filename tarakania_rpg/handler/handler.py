@@ -193,6 +193,8 @@ class Handler:
 
         with configure_scope() as scope:
             scope.user = {"id": msg.author.id, "tag": str(msg.author)}
+            scope.set_tag("message_id", msg.id)
+
             if msg.guild is None:
                 scope.set_tag("channel_dm", True)
             else:
