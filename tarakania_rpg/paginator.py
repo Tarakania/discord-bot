@@ -393,6 +393,11 @@ class RawPagePaginator(_PaginatorBase):
                 and message.content.isdigit()
             )
 
+        async def cleanup() -> None:
+            with suppress(discord.HTTPException):
+                if request_message is not None:
+                    await request_message.delete()
+
         try:
             while True:
                 response_message = await self._ctx.bot.wait_for(
@@ -423,11 +428,13 @@ class RawPagePaginator(_PaginatorBase):
 
             return await self._switch_page(old_index, new_index)
         except asyncio.TimeoutError:
+            await cleanup()
+
             raise NoPageUpdate
-        finally:
-            with suppress(discord.HTTPException):
-                if request_message is not None:
-                    await request_message.delete()
+
+        # finally statement should not be used for cleanup because it will be triggered
+        # by bot shutdown/cancellation of command
+        await cleanup()
 
     @control_fn("\N{BLACK RIGHT-POINTING TRIANGLE}")
     async def _next_page(self) -> PageType:
