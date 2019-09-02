@@ -70,7 +70,7 @@ argparser.add_argument(
     "--verbose",
     "-v",
     action="count",
-    default=0,
+    default=1,
     help="Verbosity level. Supports stacking (-vvv)",
 )
 
