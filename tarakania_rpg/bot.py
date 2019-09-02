@@ -73,3 +73,6 @@ class TarakaniaRPG(discord.AutoShardedClient):
 
     async def on_message(self, msg: discord.Message) -> None:
         await self._handler.process_message(msg)
+
+    async def on_error(self, event: str, *args: Any, **kwargs: Any) -> None:
+        log.exception(f"Error during event {event} execution")
