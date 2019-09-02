@@ -7,8 +7,9 @@ from typing import Any, Dict
 import git
 import discord
 
-from sql import create_pg_connection
 from updater import start_updater
+from db.redis import create_redis_client
+from db.postgres import create_pg_connection
 from handler.handler import Handler
 
 TARAKANIA_RPG_ASCII_ART = r""" _____                _               _           __    ___  ___
@@ -55,6 +56,7 @@ class TarakaniaRPG(discord.AutoShardedClient):
     async def on_ready(self) -> None:
         await start_updater(self)
 
+        self.redis = await create_redis_client(self.config["redis"])
         self.pg = await create_pg_connection(self.config["postgresql"])
 
         await self._handler.prepare_prefixes()
