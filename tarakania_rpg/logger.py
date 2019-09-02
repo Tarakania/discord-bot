@@ -93,6 +93,11 @@ def setup_logger() -> None:
                 "handlers": ["console"],
                 "propagate": False,
             },
+            "aioredis": {
+                "level": "WARNING",
+                "handlers": ["console"],
+                "propagate": False,
+            },
         },
         "root": {
             "level": args.verbose,
