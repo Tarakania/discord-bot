@@ -1,6 +1,5 @@
 import os
 import re
-import traceback
 
 from shlex import split
 from typing import TYPE_CHECKING, Set, Dict, Tuple, Pattern, Iterator, Optional
@@ -231,8 +230,8 @@ class Handler:
             log.exception(f"Error calling command {command.name}")
 
             response = (
-                f"Ошибка при выполнении команды **{command.name}**:\n"
-                f"```{traceback.format_exc(3)}```"
+                f"Ошибка при выполнении команды **{command.name}**.\n"
+                f"Информация об ошибке отправлена разработчикам."
             )
 
         await self.process_response(response, ctx)
