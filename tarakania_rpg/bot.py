@@ -8,7 +8,7 @@ import git
 import discord
 
 from updater import start_updater
-from db.redis import create_redis_client
+from db.redis import create_redis_pool
 from db.postgres import create_pg_connection
 from handler.handler import Handler
 
@@ -56,7 +56,7 @@ class TarakaniaRPG(discord.AutoShardedClient):
     async def on_ready(self) -> None:
         await start_updater(self)
 
-        self.redis = await create_redis_client(self.config["redis"])
+        self.redis = await create_redis_pool(self.config["redis"])
         self.pg = await create_pg_connection(self.config["postgresql"])
 
         await self._handler.prepare_prefixes()
