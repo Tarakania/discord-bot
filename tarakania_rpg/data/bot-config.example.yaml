@@ -4,8 +4,6 @@ discord-token: ""
 discord-beta-token: ""
 github-webhook-token: ""
 owners: []
-logging:
-  file: "tarakania_rpg/data/logs.log"
 postgresql:
   host: ""
   port: "5432"
@@ -16,3 +14,8 @@ redis:
   host: ""
   password: ""
   port: "6379"
+updater:
+  cert-chain-path: ""
+  cert-privkey-path: ""
+sentry:
+  dsn: ""

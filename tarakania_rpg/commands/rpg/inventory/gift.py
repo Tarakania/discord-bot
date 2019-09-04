@@ -9,6 +9,14 @@ async def run(ctx: Context, args: Arguments) -> CommandResult:
     item = args[0]
     player2 = args[1]
 
+    if len(args) == 2:
+        count = 1
+    else:
+        if args[2] == "all":
+            count = player.inventory.get_count(item)
+        else:
+            count = int(args[2])
+
     if player == player2:
         return "Нельзя дарить вещи себе"
 
@@ -21,7 +29,7 @@ async def run(ctx: Context, args: Arguments) -> CommandResult:
         return f"В вашем инвентаре и экипировке нет **{item}**"
 
     confirmation_request = await ctx.send(
-        f"Вы действительно хотите передать **{item}** персонажу **{player2}**?"
+        f"Вы действительно хотите передать **{item}** в количестве **{str(count)}** персонажу **{player2}**?"
     )
     confirmation = await request_confirmation(ctx, confirmation_request)
 
@@ -30,12 +38,12 @@ async def run(ctx: Context, args: Arguments) -> CommandResult:
             content="Вы не подтвердили передачу предемета"
         )
 
-    await player.remove_item(item, ctx.bot.pg)
-    await player2.add_item(item, ctx.bot.pg)
+    await player.remove_items(item, ctx.bot.pg, count=count)
+    await player2.add_items(item, ctx.bot.pg, count=count)
 
     return await confirmation_request.edit(
         content=(
-            f"**{player}** передал **{item}** **{player2}**"
+            f"**{player}** передал **{item}** x **{count}** **{player2}**"
             f"{' из экипировки' if from_equipment else ''}"
         )
     )
