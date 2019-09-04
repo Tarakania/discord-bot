@@ -26,9 +26,7 @@ log = getLogger(__name__)
 class _ConverterMeta(type):
     _converter_name_map: Dict[str, type] = {}
 
-    def __new__(
-        mcls, name: str, bases: Tuple[type, ...], dct: Dict[str, Any]
-    ) -> type:
+    def __new__(mcls, name: str, bases: Tuple[type, ...], dct: Dict[str, Any]) -> type:
         cls = super().__new__(mcls, name, bases, dct)
 
         type_name = dct.get("type_name")

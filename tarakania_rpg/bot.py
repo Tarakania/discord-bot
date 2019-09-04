@@ -7,8 +7,9 @@ from typing import Any, Dict
 import git
 import discord
 
-from sql import create_pg_connection
 from updater import start_updater
+from db.redis import create_redis_pool
+from db.postgres import create_pg_connection
 from handler.handler import Handler
 
 TARAKANIA_RPG_ASCII_ART = r""" _____                _               _           __    ___  ___
@@ -23,10 +24,7 @@ log = logging.getLogger(__name__)
 
 class TarakaniaRPG(discord.AutoShardedClient):
     def __init__(
-        self,
-        cli_args: argparse.Namespace,
-        config: Dict[str, Any],
-        **kwargs: Any,
+        self, cli_args: argparse.Namespace, config: Dict[str, Any], **kwargs: Any
     ):
         self.args = cli_args
 
@@ -58,14 +56,13 @@ class TarakaniaRPG(discord.AutoShardedClient):
     async def on_ready(self) -> None:
         await start_updater(self)
 
+        self.redis = await create_redis_pool(self.config["redis"])
         self.pg = await create_pg_connection(self.config["postgresql"])
 
         await self._handler.prepare_prefixes()
         await self._handler.load_all_commands()
 
-        log.info(
-            f"Running in {'production' if self.args.production else 'debug'} mode"
-        )
+        log.info(f"Running in {'production' if self.args.production else 'debug'} mode")
 
         for line in TARAKANIA_RPG_ASCII_ART.split("\n"):
             log.info(line)
@@ -76,3 +73,6 @@ class TarakaniaRPG(discord.AutoShardedClient):
 
     async def on_message(self, msg: discord.Message) -> None:
         await self._handler.process_message(msg)
+
+    async def on_error(self, event: str, *args: Any, **kwargs: Any) -> None:
+        log.exception(f"Error during event {event} execution")

@@ -1,12 +1,14 @@
 import os
 import re
-import traceback
 
 from shlex import split
 from typing import TYPE_CHECKING, Set, Dict, Tuple, Pattern, Iterator, Optional
+from asyncio import CancelledError
 from logging import getLogger
 
 import discord
+
+from sentry_sdk import configure_scope
 
 from constants import COMMANDS_DIR
 
@@ -20,9 +22,7 @@ if TYPE_CHECKING:
 
 log = getLogger(__name__)
 
-PREFIX_REGEX = (
-    r"^(?P<prefix>({prefixes}))\s*(?P<command>\w+)(?:\s+(?P<arguments>.+))?$"
-)
+PREFIX_REGEX = r"^(?P<prefix>({prefixes}))\s*(?P<command>\w+)(?:\s+(?P<arguments>.+))?$"
 
 
 class CommandCheckError(Exception):
@@ -77,9 +77,9 @@ class Handler:
                 raise
 
             return None
-        finally:
-            for alias in old_aliases:
-                del self._commands[alias]
+
+        for alias in old_aliases:
+            del self._commands[alias]
 
         for alias in command.aliases:
             self._commands[alias] = command
@@ -113,8 +113,7 @@ class Handler:
         )
 
         self._prefixes_regex = re.compile(
-            PREFIX_REGEX.format(prefixes="|".join(prefixes)),
-            re.IGNORECASE | re.UNICODE,
+            PREFIX_REGEX.format(prefixes="|".join(prefixes)), re.IGNORECASE | re.UNICODE
         )
         self._dm_prefixes_regex = re.compile(
             PREFIX_REGEX.format(prefixes="|".join(prefixes + ("",))),
@@ -157,15 +156,11 @@ class Handler:
 
         lower_content = content.lower()
         if lower_content.startswith(custom_prefix):
-            command_and_arguments = content[len(custom_prefix) :].split(
-                maxsplit=1
-            )
+            command_and_arguments = content[len(custom_prefix) :].split(maxsplit=1)
             return (
                 custom_prefix,
                 command_and_arguments[0],
-                command_and_arguments[1]
-                if len(command_and_arguments) == 2
-                else "",
+                command_and_arguments[1] if len(command_and_arguments) == 2 else "",
             )
 
         return None, None, content
@@ -183,7 +178,7 @@ class Handler:
         if used_prefix is None or used_alias is None:
             return
 
-        command = self._commands.get(used_alias)
+        command = self._commands.get(used_alias.lower())
         if command is None:
             return
 
@@ -191,11 +186,20 @@ class Handler:
             splitted_args = split(arguments)
         except ValueError:
             # TODO: better help message
-            await msg.channel.send(
-                "Ошибка разделения аргументов: открытая ковычка"
-            )
+            await msg.channel.send("Ошибка разделения аргументов: открытая ковычка")
 
             return
+
+        with configure_scope() as scope:
+            scope.user = {"id": msg.author.id, "tag": str(msg.author)}
+            scope.set_tag("message_id", msg.id)
+
+            if msg.guild is None:
+                scope.set_tag("channel_dm", True)
+            else:
+                scope.set_tag("channel_dm", False)
+                scope.set_tag("guild_id", msg.guild.id)
+                scope.set_tag("channel_id", msg.channel.id)
 
         args = Arguments(splitted_args)
         ctx = Context(self.bot, msg, command, used_prefix, used_alias)
@@ -211,22 +215,23 @@ class Handler:
             )
 
         log.debug(
-            f"Invoking command {command.name} from {ctx.author.id} in channel {ctx.channel.id}"
+            f"{command.name} <- {ctx.author.id}"
+            f"[{f'{ctx.guild.id}-{ctx.channel.id}' if ctx.guild else 'DM'}]"
         )
 
         try:
             response = await command.run(ctx, args)
         except StopCommandExecution as e:
             response = str(e)
+        except CancelledError:
+            log.debug(f"Cancelled execution of {command.name} (CancelledError)")
+            return
         except Exception:
             log.exception(f"Error calling command {command.name}")
 
-            await self.process_response(
-                (
-                    f"Ошибка при выполнении команды **{command.name}**:\n"
-                    f"```{traceback.format_exc(3)}```"
-                ),
-                ctx,
+            response = (
+                f"Ошибка при выполнении команды **{command.name}**.\n"
+                f"Информация об ошибке отправлена разработчикам."
             )
 
         await self.process_response(response, ctx)
@@ -237,17 +242,12 @@ class Handler:
                 "Данную команду можно использовать только на сервере"
             )
 
-        if (
-            ctx.command.owner_only
-            and ctx.author.id not in self.bot.config["owners"]
-        ):
+        if ctx.command.owner_only and ctx.author.id not in self.bot.config["owners"]:
             raise CommandCheckError(
                 "Данную команду могут использовать только владельцы бота"
             )
 
-    async def process_response(
-        self, response: CommandResult, ctx: Context
-    ) -> None:
+    async def process_response(self, response: CommandResult, ctx: Context) -> None:
         if isinstance(response, str):
             await ctx.send(response)
         elif isinstance(response, discord.Message):
@@ -263,6 +263,4 @@ class Handler:
         return self._commands.get(name)
 
     def get_all_commands(self, with_hidden: bool = False) -> Set[Command]:
-        return set(
-            c for c in self._commands.values() if not c.hidden or with_hidden
-        )
+        return set(c for c in self._commands.values() if not c.hidden or with_hidden)

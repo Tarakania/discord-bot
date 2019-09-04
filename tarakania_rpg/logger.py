@@ -1,7 +1,5 @@
 import logging.config
 
-from typing import Any, Dict
-
 from cli import args
 
 LEVEL_TO_COLOR_VALUE = {
@@ -47,7 +45,7 @@ def test_logger() -> None:
     print("----- End logger test -------")
 
 
-def setup_logger(logging_config: Dict[str, Any]) -> None:
+def setup_logger() -> None:
     LOGGING_CONFIG = {
         "version": 1,
         "formatters": {
@@ -71,48 +69,39 @@ def setup_logger(logging_config: Dict[str, Any]) -> None:
                 "class": "logging.StreamHandler",
                 "formatter": "colorful_simple",
             },
-            "file": {
-                "level": "ERROR",
-                "class": "logging.handlers.RotatingFileHandler",
-                "formatter": "verbose",
-                "filename": logging_config["file"],
-                "maxBytes": 10 * 1024 * 1024,
-                "backupCount": 1,
-            },
         },
         "loggers": {
             "asyncio": {
                 "level": "WARNING",
-                "handlers": ["console", "file"],
+                "handlers": ["console"],
                 "propagate": False,
             },
             "aiohttp": {
                 "level": "WARNING",
-                "handlers": ["console", "file"],
+                "handlers": ["console"],
                 "propagate": False,
             },
-            "discord": {
-                "level": "ERROR",
-                "handlers": ["console", "file"],
-                "propagate": False,
-            },
+            "discord": {"level": "ERROR", "handlers": ["console"], "propagate": False},
             "websockets": {
                 "level": "ERROR",
-                "handlers": ["console", "file"],
+                "handlers": ["console"],
                 "propagate": False,
             },
-            "git": {
+            "git": {"level": "WARNING", "handlers": ["console"], "propagate": False},
+            "sentry_sdk": {
+                "level": "DEBUG",
+                "handlers": ["console"],
+                "propagate": False,
+            },
+            "aioredis": {
                 "level": "WARNING",
-                "handlers": ["console", "file"],
+                "handlers": ["console"],
                 "propagate": False,
             },
         },
         "root": {
             "level": args.verbose,
-            "handlers": [
-                "console" if args.no_colors else "colorful_console",
-                "file",
-            ],
+            "handlers": ["console" if args.no_colors else "colorful_console"],
         },
         "disable_existing_loggers": False,
     }

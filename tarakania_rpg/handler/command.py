@@ -65,6 +65,9 @@ class Command:
         with open(configuration_path, encoding="utf8") as f:
             data = yaml.load(f, Loader=yaml.SafeLoader)
 
+        if data is None:  # empty file
+            data = {}
+
         aliases = data.get("aliases", ())
         if isinstance(aliases, str):  # 1 alias
             self.aliases = (self.name, aliases)
@@ -120,7 +123,13 @@ class Command:
 
         usage = await self.get_usage(ctx)
 
-        return f"```\n" f"{usage}\n\n" f"{self.short_help}```"
+        help_text = f"{usage}"
+        if self.short_help:
+            help_text += f"\n\n{self.short_help}"
+        if self.long_help:
+            help_text += f"\n\n{self.long_help}"
+
+        return help_text
 
     async def init(self) -> None:
         if self._init_fn is None:

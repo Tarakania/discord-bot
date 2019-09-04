@@ -1,5 +1,5 @@
 aliases: r
-short_help: "Перезагружает команды без остановки бота 123"
+short_help: "Перезагружает команды без остановки бота"
 owner_only: yes
 
 arguments:

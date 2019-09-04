@@ -1,15 +1,13 @@
 [Unit]
 Description=Container for Tarakania RPG Discord bot
-After=docker.service
-Requires=docker.service
 
 [Service]
 TimeoutStartSec=0
 Restart=always
-ExecStartPre=-/usr/bin/docker stop %n
-ExecStartPre=-/usr/bin/docker rm %n
-ExecStartPre=/usr/bin/docker pull tarakania/discord-bot
-ExecStart=/usr/bin/docker run --rm --name %n -p 60000:60000 -v /srv/tarakania/discord-bot:/code tarakania/discord-bot --production
+ExecStartPre=-/usr/bin/podman stop %n
+ExecStartPre=-/usr/bin/podman rm %n
+ExecStartPre=/usr/bin/podman pull docker://tarakania/discord-bot
+ExecStart=/usr/bin/podman run --rm --name %n --network="host" -v /srv/tarakania/discord-bot:/code -v /etc/letsencrypt:/etc/letsencrypt tarakania/discord-bot --production
 WorkingDirectory=/srv/tarakania/discord-bot
 User=tarakania
 Group=tarakania

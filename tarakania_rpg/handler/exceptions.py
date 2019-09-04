@@ -19,9 +19,7 @@ class TooFewArguments(ParserError):
 
 
 class ConvertError(ParserError):
-    def __init__(
-        self, value: Any, converter: "Converter", message: str = ""
-    ) -> None:
+    def __init__(self, value: Any, converter: "Converter", message: str = "") -> None:
         super().__init__(message)
 
         self.value = value

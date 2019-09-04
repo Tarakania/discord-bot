@@ -1,3 +1,5 @@
+from collections import Counter
+
 from handler import Context, Arguments, CommandResult
 from utils.confirmations import request_confirmation
 from utils.command_helpers import get_author_player

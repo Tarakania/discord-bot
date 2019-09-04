@@ -1,0 +1,7 @@
+short_help: "Доступ к redis"
+owner_only: yes
+
+arguments:
+  - name: команда
+    type: string
+    greedy: yes
