@@ -1,5 +1,6 @@
 import os
 import re
+import asyncio
 
 from shlex import split
 from typing import TYPE_CHECKING, Set, Dict, Tuple, Pattern, Iterator, Optional
@@ -35,6 +36,8 @@ class Handler:
 
         self._custom_prefixes: Dict[int, str] = {}
         self._commands: Dict[str, Command] = {}
+
+        self._running_commands: Dict[int, asyncio.Task[None]] = {}
 
     async def load_command(
         self, command_path: str, raise_on_error: bool = False
@@ -94,7 +97,8 @@ class Handler:
 
         log.info(f"Loaded commands with {len(self._commands)} aliases")
 
-    def _iterate_command_configurations(self) -> Iterator[str]:
+    @staticmethod
+    def _iterate_command_configurations() -> Iterator[str]:
         for path, dirs, files in os.walk(COMMANDS_DIR):
             for f in files:
                 if f.endswith(".yaml"):
@@ -108,8 +112,8 @@ class Handler:
 
         prefixes = (
             re.escape(self.bot.config["default-prefix"]),
-            f"<@{bot_id}>",
-            f"<@!{bot_id}>",
+            fr"<@{bot_id}>",
+            fr"<@!{bot_id}>",
         )
 
         self._prefixes_regex = re.compile(
@@ -166,10 +170,11 @@ class Handler:
         return None, None, content
 
     async def process_message(self, msg: discord.Message) -> None:
-        if not self._commands:
+        if msg.author.bot:
             return
 
-        if msg.author.bot:
+        if not self._commands:
+            # not initialized, avoid errors because of missing regex variables
             return
 
         used_prefix, used_alias, arguments = self.separate_prefix(
@@ -205,10 +210,10 @@ class Handler:
         ctx = Context(self.bot, msg, command, used_prefix, used_alias)
 
         try:
-            await self.run_command_checks(ctx)
+            await self._run_command_checks(ctx)
             await args.convert(ctx, command.arguments)
         except (CommandCheckError, ParserError) as e:
-            return await self.process_response(
+            return await self._process_response(
                 f"Ошибка при обработке команды **{command.name}**: {e}\n"
                 f"Правила вызова команды: `{await command.get_usage(ctx)}`",
                 ctx,
@@ -220,7 +225,10 @@ class Handler:
         )
 
         try:
-            response = await command.run(ctx, args)
+            task = asyncio.create_task(command.run(ctx, args))
+            self._running_commands[msg.id] = task
+
+            response = await task
         except StopCommandExecution as e:
             response = str(e)
         except CancelledError:
@@ -233,10 +241,12 @@ class Handler:
                 f"Ошибка при выполнении команды **{command.name}**.\n"
                 f"Информация об ошибке отправлена разработчикам."
             )
+        finally:
+            del self._running_commands[msg.id]
 
-        await self.process_response(response, ctx)
+        await self._process_response(response, ctx)
 
-    async def run_command_checks(self, ctx: Context) -> None:
+    async def _run_command_checks(self, ctx: Context) -> None:
         if ctx.command.guild_only and ctx.guild is None:
             raise CommandCheckError(
                 "Данную команду можно использовать только на сервере"
@@ -247,7 +257,7 @@ class Handler:
                 "Данную команду могут использовать только владельцы бота"
             )
 
-    async def process_response(self, response: CommandResult, ctx: Context) -> None:
+    async def _process_response(self, response: CommandResult, ctx: Context) -> None:
         if isinstance(response, str):
             await ctx.send(response)
         elif isinstance(response, discord.Message):
@@ -258,6 +268,11 @@ class Handler:
             raise TypeError(
                 f"Invalid type returned by command {ctx.command.name}: {type(response)}"
             )
+
+    def cancel_command(self, message_id: int) -> None:
+        command = self._running_commands.get(message_id)
+        if command is not None:
+            command.cancel()
 
     def get_command(self, name: str) -> Optional[Command]:
         return self._commands.get(name)
