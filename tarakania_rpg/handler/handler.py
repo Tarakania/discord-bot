@@ -37,7 +37,7 @@ class Handler:
         self._custom_prefixes: Dict[int, str] = {}
         self._commands: Dict[str, Command] = {}
 
-        self._running_commands: Dict[int, asyncio.Task[None]] = {}
+        self._running_commands: Dict[int, asyncio.Task[CommandResult]] = {}
 
     async def load_command(
         self, command_path: str, raise_on_error: bool = False

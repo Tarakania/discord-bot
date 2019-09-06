@@ -104,7 +104,7 @@ class TarakaniaRPG(discord.AutoShardedClient):
         except discord.HTTPException:
             return
 
-        # call this ourselves since message were not cached
+        # call this ourselves since message was not cached
         #
         # pin/unpin events will trigger this, there is no easy way to fix it
         await self.on_message_edit(message, message)
