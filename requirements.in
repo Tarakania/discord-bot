@@ -1,4 +1,4 @@
-discord.py
+git+https://github.com/Rapptz/discord.py
 aioredis
 asyncpg
 pyyaml>=4.2b1

@@ -113,3 +113,6 @@ venv.bak/
 
 # vim
 *.swp
+
+# redis db
+*.rdb
