@@ -85,7 +85,8 @@ class Context:
                 f"Unknown emoji type is passed: {type(reaction)}. Expected one of {discord.Emoji}, {str}, {int}"
             )
 
-        target = self.message if target is None else target
+        if target is None:
+            target = self.message
 
         if register:
             if response_to is None:
@@ -111,12 +112,12 @@ class Context:
         response: discord.Message,
         reaction: _ReactionsType,
     ) -> None:
-        key = f"message_responses:{response_to.id}"
+        address = f"message_responses:{response_to.id}"
 
         await self.bot.redis.execute(
-            "RPUSH", key, f"reaction:{response.channel.id}:{response.id}:{reaction}"
+            "RPUSH", address, f"reaction:{response.channel.id}:{response.id}:{reaction}"
         )
-        await self.bot.redis.execute("EXPIRE", key, CACHE_TTL)
+        await self.bot.redis.execute("EXPIRE", address, CACHE_TTL)
 
     @property
     def me(self) -> Union[discord.ClientUser, discord.Member]:

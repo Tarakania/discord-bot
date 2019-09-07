@@ -19,15 +19,15 @@ async def _reaction_confirmation(
     ctx: Context,
     message: discord.Message,
     user: discord.User,
-    emoji_accept: str = "\N{WHITE HEAVY CHECK MARK}",
-    emoji_reject: str = "\N{CROSS MARK}",
+    emote_accept: str = "\N{WHITE HEAVY CHECK MARK}",
+    emote_reject: str = "\N{CROSS MARK}",
     timeout: int,
 ) -> Optional[bool]:
-    all_emojis = (emoji_accept, emoji_reject)
+    all_emotes = (emote_accept, emote_reject)
 
     try:
-        for emoji in all_emojis:
-            await message.add_reaction(emoji)
+        for emote in all_emotes:
+            await ctx.react(emote, message)
     except discord.HTTPException:
         return None
 
@@ -38,13 +38,13 @@ async def _reaction_confirmation(
             return False
 
         nonlocal confirmed
-        emoji_str = str(r.emoji)
+        emote_str = str(r.emoji)
 
-        if emoji_str == emoji_accept:
+        if emote_str == emote_accept:
             confirmed = True
 
             return True
-        if emoji_str == emoji_reject:
+        if emote_str == emote_reject:
             confirmed = False
 
             return True
@@ -53,7 +53,7 @@ async def _reaction_confirmation(
 
     async def do_cleanup(user_reaction: Optional[discord.Reaction] = None) -> None:
         try:
-            for emoji in all_emojis:
+            for emoji in all_emotes:
                 await message.remove_reaction(emoji, ctx.me)
 
             if user_reaction is not None:
@@ -129,8 +129,8 @@ async def request_confirmation(
     message: discord.Message,
     *,
     user: Optional[discord.User] = None,
-    emoji_accept: str = "\N{WHITE HEAVY CHECK MARK}",
-    emoji_reject: str = "\N{CROSS MARK}",
+    emote_accept: str = "\N{WHITE HEAVY CHECK MARK}",
+    emote_reject: str = "\N{CROSS MARK}",
     accept_choices: Iterable[str] = Bool.POSITIVE,
     reject_choices: Iterable[str] = Bool.NEGATIVE,
     timeout: int = DEFAULT_TIMEOUT,
@@ -156,8 +156,8 @@ async def request_confirmation(
         return await _reaction_confirmation(
             ctx=ctx,
             message=message,
-            emoji_accept=emoji_accept,
-            emoji_reject=emoji_reject,
+            emote_accept=emote_accept,
+            emote_reject=emote_reject,
             user=user,
             timeout=timeout,
         )
