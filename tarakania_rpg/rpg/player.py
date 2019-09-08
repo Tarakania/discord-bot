@@ -77,14 +77,22 @@ class PlayerInventory:
         return len(self._items)
 
     def get_count(self, item: Item) -> int:
-        counts: Dict[Item, int] = {}
-        for item1 in self._items:
-            counts[item1] = counts.get(item1, 0) + 1
-        count = int(counts[item])
+        count = 0
+        for i in self._items:
+
+            if i == item:
+                count += 1
         return count
 
+    async def _write_items(self, player: Player, pool: asyncpg.Pool) -> None:
+        await pool.fetch(
+            "UPDATE players SET inventory = $1 WHERE discord_id = $2",
+            [i.id for i in self._items],
+            player.discord_id,
+        )
+
     async def _add_item(
-        self, item: Item, player: Player, pool: asyncpg.Pool, count: int
+        self, item: Item, player: Player, pool: asyncpg.Pool, count: int = 1
     ) -> Item:
 
         if isinstance(item, int):
@@ -93,11 +101,8 @@ class PlayerInventory:
         for i in range(count):
             self._items.append(item)
 
-        await pool.fetch(
-            "UPDATE players SET inventory = $1 WHERE discord_id = $2",
-            [i.id for i in self._items],
-            player.discord_id,
-        )
+        await self._write_items(player, pool)
+
         return item
 
     async def _remove_item(
@@ -110,11 +115,7 @@ class PlayerInventory:
         for i in range(count):
             self._items.remove(item)
 
-        await pool.fetch(
-            "UPDATE players SET inventory = $1 WHERE discord_id = $2",
-            [i.id for i in self._items],
-            player.discord_id,
-        )
+        await self._write_items(player, pool)
 
         return item
 
@@ -149,9 +150,8 @@ class PlayerInventory:
 
         self._items.remove(item)
 
-        if isinstance(item, int):
-            if item not in self:
-                raise ItemNotFound
+        if item not in self:
+            raise ItemNotFound
 
         await pool.fetch(
             "UPDATE players SET inventory = $1 WHERE discord_id = $2",
@@ -688,15 +688,11 @@ class Player:
 
         return level_to_xp(self.level + 1) - self.xp
 
-    async def add_items(
-        self, item: Item, pool: asyncpg.Pool, count: int
-    ) -> Item:
+    async def add_items(self, item: Item, pool: asyncpg.Pool, count: int = 1) -> Item:
 
         return await self.inventory._add_item(item, self, pool, count)
 
-    async def remove_items(
-        self, item: Item, pool: asyncpg.Pool, count: int
-    ) -> Item:
+    async def remove_items(self, item: Item, pool: asyncpg.Pool, count: int) -> Item:
         if item not in self.inventory:
             # prefer removing item from inventory
             if isinstance(item, Equippable):
@@ -708,9 +704,7 @@ class Player:
 
         return await self.inventory._remove_item(item, self, pool, count)
 
-    async def add_item(
-        self, item: Union[int, Item], pool: asyncpg.Pool
-    ) -> Item:
+    async def add_item(self, item: Union[int, Item], pool: asyncpg.Pool) -> Item:
         """
         Add item to player inventory.
         Returns added item on success.
@@ -720,9 +714,7 @@ class Player:
 
         return await self.inventory.add(item, self, pool)
 
-    async def remove_item(
-        self, item: Union[int, Item], pool: asyncpg.Pool
-    ) -> Item:
+    async def remove_item(self, item: Union[int, Item], pool: asyncpg.Pool) -> Item:
         """
         Remove item from inventory (preferable) or equipment.
         Returns removed item on success.
@@ -765,9 +757,7 @@ class Player:
             raise UnableToEquip
 
         await self.inventory.remove(item, self, pool)
-        print("f")
         unequipped = await self.equipment.equip(item, self, pool)
-        print("q")
 
         if unequipped is not None:
             await self.inventory.add(unequipped, self, pool)

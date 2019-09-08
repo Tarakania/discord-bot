@@ -1,5 +1,3 @@
-from collections import Counter
-
 from handler import Context, Arguments, CommandResult
 from utils.confirmations import request_confirmation
 from utils.command_helpers import get_author_player
@@ -31,7 +29,7 @@ async def run(ctx: Context, args: Arguments) -> CommandResult:
         return f"В вашем инвентаре и экипировке нет **{item}**"
 
     confirmation_request = await ctx.send(
-        f"Вы действительно хотите передать **{item}** в количестве **{str(count)}** персонажу **{player2}**?"
+        f"Вы действительно хотите передать **{item}** в количестве **{count}** персонажу **{player2}**?"
     )
     confirmation = await request_confirmation(ctx, confirmation_request)
 
