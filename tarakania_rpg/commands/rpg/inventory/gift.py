@@ -4,18 +4,21 @@ from utils.command_helpers import get_author_player
 
 
 async def run(ctx: Context, args: Arguments) -> CommandResult:
+
     player = await get_author_player(ctx)
 
     item = args[0]
     player2 = args[1]
 
-    if len(args) == 2:
-        count = 1
+    if args[2] == "all":
+        count = player.inventory.get_count(item)
     else:
-        if args[2] == "all":
-            count = player.inventory.get_count(item)
-        else:
+        if args[2].isdigit():
             count = int(args[2])
+            if int(args[2]) < 1:
+                return "Значение count не может быть минусовым"
+        else:
+            return "Передано неверное значение аргумента"
 
     if player == player2:
         return "Нельзя дарить вещи себе"
@@ -38,8 +41,8 @@ async def run(ctx: Context, args: Arguments) -> CommandResult:
             content="Вы не подтвердили передачу предемета"
         )
 
-    await player.remove_items(item, ctx.bot.pg, count=count)
-    await player2.add_items(item, ctx.bot.pg, count=count)
+    await player.remove_item(item, ctx.bot.pg, count=count)
+    await player2.add_item(item, ctx.bot.pg, count=count)
 
     return await confirmation_request.edit(
         content=(

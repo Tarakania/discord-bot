@@ -7,4 +7,5 @@ arguments:
     type: player
   - name: количество
     type: string
-    defalut: 1
+    default: 1
+    optional: yes
