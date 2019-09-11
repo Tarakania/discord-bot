@@ -41,6 +41,9 @@ class TarakaniaRPG(discord.AutoShardedClient):
 
         super().__init__(**kwargs)
 
+        # prevents bot from initislizing on reconnect
+        self._first_on_ready = True
+
     def run(self, *args: Any, **kwargs: Any) -> None:
         if self.args.production:
             token = self.config["discord-token"]
@@ -57,6 +60,13 @@ class TarakaniaRPG(discord.AutoShardedClient):
         super().run(token, *args, **kwargs)
 
     async def on_ready(self) -> None:
+        if not self._first_on_ready:
+            log.info("Reconnected")
+
+            return
+
+        self._first_on_ready = False
+
         await start_updater(self)
 
         self.redis = await create_redis_pool(self.config["redis"])
