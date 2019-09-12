@@ -13,7 +13,7 @@ import discord
 from handler.command import StopCommandExecution
 from handler.context import Context
 
-__all__ = ("RawPagePaginator", "EmbedPagePaginator")
+__all__ = ("RawPagePaginator", "EmbedPagePaginator", "PaginatorWithHelp")
 
 log = getLogger(__name__)
 
@@ -22,9 +22,11 @@ ControlFnType = Callable[[Any], Awaitable[PageType]]
 
 
 class _control_fn:
-    def __init__(self, fn: ControlFnType, name: str):
+    def __init__(self, fn: ControlFnType, name: str, position: int):
         self.fn = fn
         self.name = name
+
+        setattr(fn, "__position", position)
 
     def __set_name__(self, owner: _PaginatorBase, name: str) -> None:
         owner._default_events[self.name] = self.fn
@@ -32,11 +34,11 @@ class _control_fn:
         setattr(owner, name, self.fn)
 
 
-def control_fn(name: str) -> Callable[[ControlFnType], _control_fn]:
+def control_fn(name: str, position: int = 1) -> Callable[[ControlFnType], _control_fn]:
     """Decorator for emote event handlers."""
 
     def wrapper(fn: ControlFnType) -> _control_fn:
-        return _control_fn(fn, name)
+        return _control_fn(fn, name, position)
 
     return wrapper
 
@@ -102,6 +104,20 @@ class _PaginatorBase:
 
         # to allow dynamic modification of _events
         self._events = self._default_events
+
+        self._sort_reactions()
+
+    def _sort_reactions(self) -> None:
+        # negative indexes
+        for fn in self._events.values():
+            position = getattr(fn, "__position")
+            if position < 0:
+                # TODO: what if (-position) > len(self._events) ?
+                setattr(fn, "__position", len(self._events) + position)
+
+        self._events = dict(
+            sorted(self._events.items(), key=lambda x: getattr(x[1], "__position"))
+        )
 
     async def _init_reactions(self) -> None:
         try:
@@ -304,13 +320,50 @@ class _PaginatorBase:
         return f"<{self.__class__.__name__} size=self.size >"
 
 
-class RawPagePaginator(_PaginatorBase):
+class PaginatorWithHelp(_PaginatorBase):
+    """Contains help button."""
+
+    __slots__ = ("_on_help_page",)
+
+    def __init__(self, *args: Any, **kwargs: Any):
+        super().__init__(*args, **kwargs)
+
+        self._on_help_page = False
+
+    @control_fn("\N{WHITE QUESTION MARK ORNAMENT}", position=-1)
+    async def _help(self) -> PageType:
+        """Справка по использованию пагинатора."""
+
+        if self._on_help_page:
+            self._on_help_page = False
+            return await self._switch_page(self._index, self._index)
+        else:
+            self._on_help_page = True
+
+        e = discord.Embed(
+            description=(
+                "Для использования пагинатора, нажимайте на реакции под \n"
+                "этим сообщением. \n"
+                "Каждое нажатие на реакцию добавляет время работы пагинатора.\n"
+                "По истечению этого времени бот уберёт свои реакции и не \n"
+                "будет реагировать на нажатия.\n\n"
+                "**Список реакций и их действий приведён ниже:**\n"
+            )
+            + "\n".join(f"{emote}: {fn.__doc__}" for emote, fn in self._events.items()),
+            color=discord.Color.purple(),
+        )
+        e.set_author(name="Справка по использованию пагинатора")
+
+        return e
+
+
+class RawPagePaginator(PaginatorWithHelp):
     """
     Most basic paginator. Sends page switch callback result directly to
     message.edit.
     """
 
-    __slots__ = ("_index_request_timeout", "_looped", "_on_help_page")
+    __slots__ = ("_index_request_timeout", "_looped")
 
     def __init__(
         self,
@@ -323,8 +376,6 @@ class RawPagePaginator(_PaginatorBase):
 
         self._index_request_timeout = index_request_timeout
         self._looped = looped
-
-        self._on_help_page = False
 
     def _index_down(self) -> None:
         if self._index == 0:
@@ -435,32 +486,6 @@ class RawPagePaginator(_PaginatorBase):
                 raise NoPageUpdate
 
         return await self._switch_page(old_index, self._index)
-
-    @control_fn("\N{WHITE QUESTION MARK ORNAMENT}")
-    async def _help(self) -> PageType:
-        """Справка по использованию пагинатора."""
-
-        if self._on_help_page:
-            self._on_help_page = False
-            return await self._switch_page(self._index, self._index)
-        else:
-            self._on_help_page = True
-
-        e = discord.Embed(
-            description=(
-                "Для использования пагинатора, нажимайте на реакции под \n"
-                "этим сообщением. \n"
-                "Каждое нажатие на реакцию добавляет время работы пагинатора.\n"
-                "По истечению этого времени бот уберёт свои реакции и не \n"
-                "будет реагировать на нажатия.\n\n"
-                "**Список реакций и их действий приведён ниже:**\n"
-            )
-            + "\n".join(f"{emote}: {fn.__doc__}" for emote, fn in self._events.items()),
-            color=discord.Color.purple(),
-        )
-        e.set_author(name="Справка по использованию пагинатора")
-
-        return e
 
 
 class EmbedPagePaginator(RawPagePaginator):
