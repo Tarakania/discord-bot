@@ -94,22 +94,22 @@ class PlayerInventory:
     async def add(
         self, item: Item, player: Player, pool: asyncpg.Pool, count: int = 1
     ) -> Item:
-        if isinstance(item, int):
-            item = Item.from_id(item)
 
         for i in range(count):
             self._items.append(item)
+
+        await self._write_items(player, pool)
 
         return item
 
     async def remove(
         self, item: Item, player: Player, pool: asyncpg.Pool, count: int = 1
     ) -> Item:
-        if isinstance(item, int):
-            item = Item.from_id(item)
 
         for i in range(count):
             self._items.remove(item)
+
+        await self._write_items(player, pool)
 
         return item
 
@@ -666,14 +666,9 @@ class Player:
         if isinstance(item, int):
             item = Item.from_id(item)
 
-        await self.inventory.add(item, self, pool, count)
-        await self.inventory._write_items(self, pool)
-        return item
+        return await self.inventory.add(item, self, pool, count)
 
     async def remove_item(self, item: Item, pool: asyncpg.Pool, count: int = 1) -> Item:
-        await self.inventory.remove(item, self, pool, count)
-        await self.inventory._write_items(self, pool)
-
         if item not in self.inventory:
             # prefer removing item from inventory
             if isinstance(item, Equippable):
@@ -682,7 +677,7 @@ class Player:
 
                     # avoid adding item to inventory and removing it again
                     return item
-        return item
+        return await self.inventory.remove(item, self, pool, count)
 
     def can_equip(self, item: Union[int, Equippable]) -> bool:
         """Check if item can be equipped."""
