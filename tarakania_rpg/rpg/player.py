@@ -91,7 +91,7 @@ class PlayerInventory:
             player.discord_id,
         )
 
-    async def _add_item(
+    async def add(
         self, item: Item, player: Player, pool: asyncpg.Pool, count: int = 1
     ) -> Item:
         if isinstance(item, int):
@@ -100,12 +100,10 @@ class PlayerInventory:
         for i in range(count):
             self._items.append(item)
 
-        await self._write_items(player, pool)
-
         return item
 
-    async def _remove_item(
-        self, item: Item, player: Player, pool: asyncpg.Pool, count: int
+    async def remove(
+        self, item: Item, player: Player, pool: asyncpg.Pool, count: int = 1
     ) -> Item:
         if isinstance(item, int):
             item = Item.from_id(item)
@@ -113,11 +111,9 @@ class PlayerInventory:
         for i in range(count):
             self._items.remove(item)
 
-        await self._write_items(player, pool)
-
         return item
 
-    async def remove_items(
+    async def remove_many(
         self, item: List[Item], player: Player, pool: asyncpg.Pool
     ) -> Item:
 
@@ -128,7 +124,7 @@ class PlayerInventory:
 
         return item[0]
 
-    async def add_items(
+    async def add_many(
         self, item: List[Item], player: Player, pool: asyncpg.Pool
     ) -> Item:
 
@@ -138,48 +134,6 @@ class PlayerInventory:
         await self._write_items(player, pool)
 
         return item[0]
-
-    async def add(
-        self, item: Union[int, Item], player: Player, pool: asyncpg.Pool
-    ) -> Item:
-        """Add item to player inventory. Returns added item on success."""
-
-        if isinstance(item, int):
-            item = Item.from_id(item)
-
-        self._items.append(item)
-
-        await pool.fetch(
-            "UPDATE players SET inventory = $1 WHERE discord_id = $2",
-            [i.id for i in self._items],
-            player.discord_id,
-        )
-
-        return item
-
-    async def remove(
-        self, item: Union[int, Item], player: Player, pool: asyncpg.Pool
-    ) -> Item:
-        """
-        Remove item from inventory.
-        Returns removed item on success.
-        """
-
-        if isinstance(item, int):
-            item = Item.from_id(item)
-
-        if item not in self:
-            raise ItemNotFound
-
-        self._items.remove(item)
-
-        await pool.fetch(
-            "UPDATE players SET inventory = $1 WHERE discord_id = $2",
-            [i.id for i in self._items],
-            player.discord_id,
-        )
-
-        return item
 
     def __contains__(self, obj: object) -> bool:
         """Check if item is in player's inventory."""
@@ -712,9 +666,14 @@ class Player:
         if isinstance(item, int):
             item = Item.from_id(item)
 
-        return await self.inventory._add_item(item, self, pool, count)
+        await self.inventory.add(item, self, pool, count)
+        await self.inventory._write_items(self, pool)
+        return item
 
-    async def remove_item(self, item: Item, pool: asyncpg.Pool, count: int) -> Item:
+    async def remove_item(self, item: Item, pool: asyncpg.Pool, count: int = 1) -> Item:
+        await self.inventory.remove(item, self, pool, count)
+        await self.inventory._write_items(self, pool)
+
         if item not in self.inventory:
             # prefer removing item from inventory
             if isinstance(item, Equippable):
@@ -723,8 +682,7 @@ class Player:
 
                     # avoid adding item to inventory and removing it again
                     return item
-
-        return await self.inventory._remove_item(item, self, pool, count)
+        return item
 
     def can_equip(self, item: Union[int, Equippable]) -> bool:
         """Check if item can be equipped."""

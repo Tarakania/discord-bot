@@ -16,7 +16,7 @@ async def run(ctx: Context, args: Arguments) -> CommandResult:
         if args[2].isdigit():
             count = int(args[2])
             if int(args[2]) < 1:
-                return "Значение count не может быть минусовым"
+                return "Количество должно быть больше нуля"
         else:
             return "Передано неверное значение аргумента"
 
