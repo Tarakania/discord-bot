@@ -95,6 +95,9 @@ class PlayerInventory:
         self, item: Item, player: Player, pool: asyncpg.Pool, count: int = 1
     ) -> Item:
 
+        if item not in self:
+            raise ItemNotFound
+
         for i in range(count):
             self._items.append(item)
 
@@ -106,6 +109,9 @@ class PlayerInventory:
         self, item: Item, player: Player, pool: asyncpg.Pool, count: int = 1
     ) -> Item:
 
+        if item not in self:
+            raise ItemNotFound
+
         for i in range(count):
             self._items.remove(item)
 
@@ -114,26 +120,30 @@ class PlayerInventory:
         return item
 
     async def remove_many(
-        self, item: List[Item], player: Player, pool: asyncpg.Pool
-    ) -> Item:
+        self, items: List[Item], player: Player, pool: asyncpg.Pool
+    ) -> None:
 
-        for i in item:
+        for item in items:
+            if item not in self:
+                raise ItemNotFound
+
+        for i in items:
             self._items.remove(i)
 
         await self._write_items(player, pool)
 
-        return item[0]
-
     async def add_many(
-        self, item: List[Item], player: Player, pool: asyncpg.Pool
-    ) -> Item:
+        self, items: List[Item], player: Player, pool: asyncpg.Pool
+    ) -> None:
 
-        for i in item:
+        for item in items:
+            if item not in self:
+                raise ItemNotFound
+
+        for i in items:
             self._items.append(i)
 
         await self._write_items(player, pool)
-
-        return item[0]
 
     def __contains__(self, obj: object) -> bool:
         """Check if item is in player's inventory."""
