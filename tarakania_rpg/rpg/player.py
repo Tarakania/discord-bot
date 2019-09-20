@@ -95,9 +95,6 @@ class PlayerInventory:
         self, item: Item, player: Player, pool: asyncpg.Pool, count: int = 1
     ) -> Item:
 
-        if item not in self:
-            raise ItemNotFound
-
         for i in range(count):
             self._items.append(item)
 
@@ -135,10 +132,6 @@ class PlayerInventory:
     async def add_many(
         self, items: List[Item], player: Player, pool: asyncpg.Pool
     ) -> None:
-
-        for item in items:
-            if item not in self:
-                raise ItemNotFound
 
         for i in items:
             self._items.append(i)
