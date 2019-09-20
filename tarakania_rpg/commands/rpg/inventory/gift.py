@@ -40,9 +40,8 @@ async def run(ctx: Context, args: Arguments) -> CommandResult:
         return await confirmation_request.edit(
             content="Вы не подтвердили передачу предемета"
         )
-
-    await player.remove_item(item, ctx.bot.pg, count=count)
-    await player2.add_item(item, ctx.bot.pg, count=count)
+    await player.inventory.remove(item, player, ctx.bot.pg, count=count)
+    await player2.inventory.add(item, player2, ctx.bot.pg, count=count)
 
     return await confirmation_request.edit(
         content=(

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from typing import Any, Dict, List, Union, Iterator, Optional
-from contextlib import suppress
 
 import asyncpg
 
@@ -664,23 +663,6 @@ class Player:
         """Get amount of xp required to get next level."""
 
         return level_to_xp(self.level + 1) - self.xp
-
-    async def add_item(self, item: Item, pool: asyncpg.Pool, count: int = 1) -> Item:
-        if isinstance(item, int):
-            item = Item.from_id(item)
-
-        return await self.inventory.add(item, self, pool, count)
-
-    async def remove_item(self, item: Item, pool: asyncpg.Pool, count: int = 1) -> Item:
-        if item not in self.inventory:
-            # prefer removing item from inventory
-            if isinstance(item, Equippable):
-                with suppress(ItemAlreadyUnequipped):
-                    await self.equipment.unequip(item, self, pool)
-
-                    # avoid adding item to inventory and removing it again
-                    return item
-        return await self.inventory.remove(item, self, pool, count)
 
     def can_equip(self, item: Union[int, Equippable]) -> bool:
         """Check if item can be equipped."""
