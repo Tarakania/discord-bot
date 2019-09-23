@@ -81,7 +81,8 @@ class PlayerInventory:
 
             if i == item:
                 count += 1
-        return count
+
+        return self._items.count(item)
 
     async def _write_items(self, player: Player, pool: asyncpg.Pool) -> None:
         await pool.fetch(
