@@ -76,11 +76,6 @@ class PlayerInventory:
         return len(self._items)
 
     def get_count(self, item: Item) -> int:
-        count = 0
-        for i in self._items:
-
-            if i == item:
-                count += 1
 
         return self._items.count(item)
 
