@@ -7,7 +7,7 @@ async def run(ctx: Context, args: Arguments) -> CommandResult:
     player = await get_author_player(ctx)
 
     try:
-        await player.remove_item(args[0], ctx.bot.pg)
+        await player.inventory.remove(args[0], player, ctx.bot.pg)
     except ItemNotFound:
         return f"В вашем инвентаре нет **{args[0]}**"
 

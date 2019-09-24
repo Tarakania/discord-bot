@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from typing import Any, Dict, List, Union, Iterator, Optional
-from contextlib import suppress
 
 import asyncpg
 
@@ -76,47 +75,63 @@ class PlayerInventory:
     def size(self) -> int:
         return len(self._items)
 
-    async def add(
-        self, item: Union[int, Item], player: Player, pool: asyncpg.Pool
-    ) -> Item:
-        """Add item to player inventory. Returns added item on success."""
+    def get_count(self, item: Item) -> int:
 
-        if isinstance(item, int):
-            item = Item.from_id(item)
+        return self._items.count(item)
 
-        self._items.append(item)
-
+    async def _write_items(self, player: Player, pool: asyncpg.Pool) -> None:
         await pool.fetch(
             "UPDATE players SET inventory = $1 WHERE discord_id = $2",
             [i.id for i in self._items],
             player.discord_id,
         )
+
+    async def add(
+        self, item: Item, player: Player, pool: asyncpg.Pool, count: int = 1
+    ) -> Item:
+
+        for i in range(count):
+            self._items.append(item)
+
+        await self._write_items(player, pool)
 
         return item
 
     async def remove(
-        self, item: Union[int, Item], player: Player, pool: asyncpg.Pool
+        self, item: Item, player: Player, pool: asyncpg.Pool, count: int = 1
     ) -> Item:
-        """
-        Remove item from inventory.
-        Returns removed item on success.
-        """
-
-        if isinstance(item, int):
-            item = Item.from_id(item)
 
         if item not in self:
             raise ItemNotFound
 
-        self._items.remove(item)
+        for i in range(count):
+            self._items.remove(item)
 
-        await pool.fetch(
-            "UPDATE players SET inventory = $1 WHERE discord_id = $2",
-            [i.id for i in self._items],
-            player.discord_id,
-        )
+        await self._write_items(player, pool)
 
         return item
+
+    async def remove_many(
+        self, items: List[Item], player: Player, pool: asyncpg.Pool
+    ) -> None:
+
+        for item in items:
+            if item not in self:
+                raise ItemNotFound
+
+        for i in items:
+            self._items.remove(i)
+
+        await self._write_items(player, pool)
+
+    async def add_many(
+        self, items: List[Item], player: Player, pool: asyncpg.Pool
+    ) -> None:
+
+        for i in items:
+            self._items.append(i)
+
+        await self._write_items(player, pool)
 
     def __contains__(self, obj: object) -> bool:
         """Check if item is in player's inventory."""
@@ -231,10 +246,8 @@ class PlayerEquipmnent:
 
         if currently_equipped == item:
             raise ItemAlreadyEquipped
-
         if not player.can_equip(item):
             raise UnableToEquip
-
         # f-string is safe here because slot_name is checked against _slots in
         # all scenarios
         await pool.fetch(
@@ -646,37 +659,6 @@ class Player:
         """Get amount of xp required to get next level."""
 
         return level_to_xp(self.level + 1) - self.xp
-
-    async def add_item(self, item: Item, pool: asyncpg.Pool) -> Item:
-        """
-        Add item to player inventory.
-        Returns added item on success.
-        """
-
-        if isinstance(item, int):
-            item = Item.from_id(item)
-
-        return await self.inventory.add(item, self, pool)
-
-    async def remove_item(self, item: Item, pool: asyncpg.Pool) -> Item:
-        """
-        Remove item from inventory (preferable) or equipment.
-        Returns removed item on success.
-        """
-
-        if isinstance(item, int):
-            item = Item.from_id(item)
-
-        if item not in self.inventory:
-            # prefer removing item from inventory
-            if isinstance(item, Equippable):
-                with suppress(ItemAlreadyUnequipped):
-                    await self.equipment.unequip(item, self, pool)
-
-                    # avoid adding item to inventory and removing it again
-                    return item
-
-        return await self.inventory.remove(item, self, pool)
 
     def can_equip(self, item: Union[int, Equippable]) -> bool:
         """Check if item can be equipped."""
