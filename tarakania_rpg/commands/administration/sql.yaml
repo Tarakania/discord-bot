@@ -1,0 +1,7 @@
+short_help: "выполнение sql"
+
+arguments:
+  - name: sql
+    type: string
+    greedy: yes
+    optional: yes
