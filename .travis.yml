@@ -1,10 +1,21 @@
+dist: bionic
 language: python
+
+cache:
+  pip: true
+  directories:
+    - $HOME/.cache/pre-commit
+
+env:
+  global:
+    - PIP_DISABLE_PIP_VERSION_CHECK=yes PIP_QUIET=yes
+
 matrix:
   include:
-    - name: "Python 3.7.1 on Xenial Linux"
+    - name: "Python 3.7 on Xenial Linux"
       python: 3.7
       dist: xenial
-    - name: "Python 3.7.3 on Windows"
+    - name: "Python 3.7 on Windows"
       os: windows
       language: shell
       before_install:
@@ -13,10 +24,8 @@ matrix:
       env: PATH=/c/Python37:/c/Python37/Scripts:$PATH
 
 install:
-  - pip3 install --no-cache-dir --disable-pip-version-check --upgrade pip
-  - pip3 install --no-cache-dir --disable-pip-version-check -r requirements.txt
-  - pip3 install --no-cache-dir --disable-pip-version-check pre-commit
+  - pip3 install --upgrade pip
+  - pip3 install pre-commit  # -r requirements.txt
 
 script:
-  - pre-commit install
   - pre-commit run --all-files
