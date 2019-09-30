@@ -1,8 +1,7 @@
-short_help: "выполнение sql"
+short_help: Выполнение sql
 owner_only: yes
 
 arguments:
-  - name: sql
+  - name: query
     type: string
     greedy: yes
-    optional: yes

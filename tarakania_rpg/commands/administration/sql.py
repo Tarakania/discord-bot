@@ -4,13 +4,13 @@ from utils.formatting import TabularData, codeblock
 
 async def run(ctx: Context, args: Arguments) -> CommandResult:
     try:
-        a = await ctx.bot.pg.fetch(" ".join(args))
+        sql = await ctx.bot.pg.fetch(" ".join(args))
     except Exception as e:
-        return codeblock(str(e))
-    if len(a) > 0:
+        return codeblock("Произошла ошибка: " + str(e))
+    if len(sql) > 0:
         table = TabularData()
-        re = list(a[0].keys())
+        re = list(sql[0].keys())
         table.set_columns(re)
-        table.add_rows(list(r.values() for r in a))
-        a = table.render()
-    return codeblock(a)
+        table.add_rows(list(r.values() for r in sql))
+        sql = table.render()
+    return codeblock(sql)
