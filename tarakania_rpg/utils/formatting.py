@@ -7,7 +7,7 @@ def codeblock(string: str, language: str = "") -> str:
     return f"```{language}\n{string}```"
 
 
-"""TabularData class taken from: https://github.com/Rapptz/RoboDanny/blob/rewrite/cogs/utils/formats.py"""
+# TabularData class taken from: https://github.com/Rapptz/RoboDanny/blob/rewrite/cogs/utils/formats.py
 
 
 class TabularData:
