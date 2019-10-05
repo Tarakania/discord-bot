@@ -9,11 +9,10 @@ async def run(ctx: Context, args: Arguments) -> CommandResult:
     try:
         result = await ctx.bot.pg.fetch(" ".join(args))
     except Exception as e:
-        return codeblock(f"Произошла ошибка: {e}")
+        return f"Произошла ошибка: {codeblock(str(e))}"
     if len(result) > 0:
         table = TabularData()
-        re = list(result[0].keys())
-        table.set_columns(re)
+        table.set_columns(list(result[0].keys()))
         table.add_rows(list(r.values() for r in result))
         result = table.render()
         if len(result) > 2000:
