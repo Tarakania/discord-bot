@@ -1,0 +1,7 @@
+short_help: Выполнение sql
+owner_only: yes
+
+arguments:
+  - name: query
+    type: string
+    greedy: yes
