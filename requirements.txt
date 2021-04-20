@@ -12,7 +12,7 @@ async-timeout==3.0.1
     # via
     #   aiohttp
     #   aioredis
-asyncpg==0.18.3
+asyncpg==0.21.0
     # via -r requirements.in
 attrs==19.1.0
     # via aiohttp
